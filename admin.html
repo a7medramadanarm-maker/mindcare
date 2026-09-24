@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>MindCare | لوحة التحكم</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  [hidden]{display:none!important}
+  body{background:var(--cream)}
+  .wrap{width:min(1200px,calc(100% - 28px));margin:30px auto}
+  .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:18px}
+  .login{max-width:380px;margin:80px auto}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+  .top h1{font-size:26px}
+  .top small{font-size:14px;color:var(--muted);font-weight:400}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+  .stat{padding:15px;background:var(--green-soft);border-radius:12px;text-align:center}
+  .stat b{display:block;font-size:24px;color:var(--green-dark);margin-bottom:4px}
+  .stat small{color:var(--muted)}
+  .tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .note{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .err{color:#a04040;font-size:13px;margin-top:10px}
+  .tblwrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:10px;border-bottom:1px solid var(--border);text-align:right;vertical-align:top}
+  .badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;background:var(--green-soft)}
+  .badge.pending{background:#f5f0e4}.badge.confirmed{background:#dcefe3}.badge.cancelled{background:#f3dede}
+  .acts{display:flex;gap:6px;flex-wrap:wrap}
+  .mini{min-height:32px;padding:4px 12px;font-size:12px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:8px}
+  .row .form-group{flex:1;min-width:150px;margin:0}
+  .form-group{margin-bottom:16px}
+  .form-group label{display:block;margin-bottom:6px;font-size:13px;font-weight:700}
+  .form-group input,.form-group textarea,.form-group select{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px}
+  .form-group textarea{resize:vertical;min-height:60px}
+  .empty{color:var(--muted);text-align:center;padding:22px}
+  .section{margin-top:20px}
+  .section h3{margin:15px 0 10px;font-size:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="login" class="card login">
+    <h2>دخول الإدارة</h2>
+    <form id="loginForm" style="margin-top:16px">
+      <div class="form-group">
+        <label for="pass">كلمة المرور</label>
+        <input id="pass" type="password" required autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary full-width" type="submit">دخول</button>
+      <p id="loginErr" class="err"></p>
+    </form>
+    <a class="text-link" href="index.html">العودة للموقع</a>
+  </section>
+
+  <div id="app" hidden>
+    <div class="top">
+      <h1>لوحة التحكم <small>MindCare Admin</small></h1>
+      <div class="acts">
+        <a class="btn btn-soft btn-small" href="index.html">الموقع</a>
+        <button class="btn btn-outline btn-small" id="logout" type="button">خروج</button>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <b id="bookingCount">0</b>
+        <small>طلبات الحجز</small>
+      </div>
+      <div class="stat">
+        <b id="pendingCount">0</b>
+        <small>قيد الانتظار</small>
+      </div>
+      <div class="stat">
+        <b id="slotCount">0</b>
+        <small>مواعيد متاحة</small>
+      </div>
+      <div class="stat">
+        <b id="topicCount">0</b>
+        <small>موضوعات</small>
+      </div>
+    </div>
+
+    <p class="note">البيانات محفوظة في متصفح هذا الجهاز. لاستقبال الطلبات من أجهزة أخرى اربط قاعدة بيانات (Firebase).</p>
+
+    <div class="tabs">
+      <button class="btn btn-primary btn-small" data-tab="bookings" type="button">طلبات الحجز</button>
+      <button class="btn btn-soft btn-small" data-tab="slots" type="button">المواعيد</button>
+      <button class="btn btn-soft btn-small" data-tab="topics" type="button">الموضوعات</button>
+      <button class="btn btn-soft btn-small" data-tab="providers" type="button">المختصون</button>
+    </div>
+
+    <!-- ===== BOOKINGS ===== -->
+    <section id="p-bookings" class="card">
+      <h3>طلبات الحجز الواردة</h3>
+      <div class="tblwrap">
+        <table>
+          <thead><tr><th>الطلب</th><th>الاسم</th><th>الهاتف</th><th>المختص</th><th>الموعد</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+          <tbody id="bookRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===== SLOTS ===== -->
+    <section id="p-slots" class="card" hidden>
+      <h3>المواعيد المتاحة</h3>
+      <div class="section">
+        <h4>إضافة مواعيد جديدة</h4>
+        <form id="slotForm" class="row">
+          <div class="form-group"><label for="sProv">المختص</label><select id="sProv"></select></div>
+          <div class="form-group"><label for="sDate">التاريخ</label><input id="sDate" type="date" required></div>
+          <div class="form-group"><label for="sTimes">الأوقات (10:00, 11:30, 14:00)</label><input id="sTimes" dir="ltr" placeholder="10:00, 11:30, 14:00" required></div>
+          <button class="btn btn-primary" type="submit">إضافة</button>
+        </form>
+        <p id="slotMsg" class="note"></p>
+      </div>
+      <div class="section">
+        <h4>المواعيد الحالية</h4>
+        <div class="tblwrap">
+          <table>
+            <thead><tr><th>المختص</th><th>التاريخ</th><th>الوقت</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+            <tbody id="slotRows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TOPICS ===== -->
+    <section id="p-topics" class="card" hidden>
+      <h3>إدارة الموضوعات النفسية</h3>
+      <div class="section">
+        <h4>إضافة موضوع جديد</h4>
+        <form id="topicForm">
+          <div class="form-group">
+            <label for="tKey">معرّف الموضوع (بالإنجليزية)</label>
+            <input id="tKey" type="text" placeholder="stress-management" required>
+          </div>
+          <div class="form-group">
+            <label for="tTitle">العنوان بالعربية</label>
+            <input id="tTitle" type="text" placeholder="إدارة الضغط النفسي" required>
+          </div>
+          <div class="form-group">
+            <label for="tIntro">مقدمة</label>
+            <textarea id="tIntro" placeholder="شرح مختصر عن الموضوع..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="tSymptoms">الأعراض (افصل بفاصلة)</label>
+            <textarea id="tSymptoms" placeholder="عرض 1, عرض 2, عرض 3" required></textarea>
+          </div>
+          <button class="btn btn-primary" type="submit">إضافة موضوع</button>
+        </form>
+        <p id="topicMsg" class="note"></p>
+      </div>
+      <div class="section">
+        <h4>الموضوعات الحالية</h4>
+        <div id="topicsList"></div>
+      </div>
+    </section>
+
+    <!-- ===== PROVIDERS ===== -->
+    <section id="p-providers" class="card" hidden>
+      <h3>المختصون (Providers)</h3>
+      <p class="note">لتعديل المختصين، أضف قيمهم الجديدة في store.js وأعد تحميل الصفحة</p>
+      <div id="providersList"></div>
+    </section>
+  </div>
+
+</div>
+<script src="store.js"></script>
+<script src="admin.js"></script>
+</body>
+          </html>
