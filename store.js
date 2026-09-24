@@ -11,7 +11,7 @@
   const when = s => s.date + " " + s.time;
 
   window.MC = {
-    ADMIN_PASSWORD: "admin123", // غيّرها قبل النشر
+    ADMIN_PASSWORD: "a15330aF", // غيّرها قبل النشر
     WHATSAPP: "201003089153",
     PROVIDERS: ["Tasbeh Mohamed", "Mariam Mahmoud"],
 
