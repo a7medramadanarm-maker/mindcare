@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <meta name="theme-color" content="#6f897b">
 
     <meta name="description"
@@ -34,7 +33,7 @@
 
         <div class="container header-inner">
 
-            <a href="#home" class="brand" aria-label="MindCare">
+            <a href="#home" class="brand">
 
                 <span class="brand-mark">
                     <i class="fa-solid fa-leaf"></i>
@@ -49,23 +48,23 @@
 
             <nav class="main-nav" id="mainNav">
 
-                <a href="#home" class="nav-link active">
+                <a href="#home" class="nav-link active" data-i18n="nav.home">
                     الرئيسية
                 </a>
 
-                <a href="#how-it-works" class="nav-link">
+                <a href="#how-it-works" class="nav-link" data-i18n="nav.how">
                     كيف تعمل
                 </a>
 
-                <a href="#topics" class="nav-link">
+                <a href="#topics" class="nav-link" data-i18n="nav.topics">
                     الصحة النفسية
                 </a>
 
-                <a href="#specialists" class="nav-link">
+                <a href="#specialists" class="nav-link" data-i18n="nav.specialists">
                     المختصون
                 </a>
 
-                <a href="#faq" class="nav-link">
+                <a href="#faq" class="nav-link" data-i18n="nav.faq">
                     الأسئلة الشائعة
                 </a>
 
@@ -76,8 +75,7 @@
                 <button
                     class="language-switch"
                     id="languageSwitch"
-                    type="button"
-                    aria-label="Change language">
+                    type="button">
                     EN
                 </button>
 
@@ -85,8 +83,13 @@
                     class="btn btn-primary btn-small"
                     type="button"
                     data-open-booking>
-                    ابدأ الحجز
+
+                    <span data-i18n="buttons.book">
+                        ابدأ الحجز
+                    </span>
+
                     <i class="fa-solid fa-arrow-left"></i>
+
                 </button>
 
             </div>
@@ -95,8 +98,7 @@
                 class="menu-toggle"
                 id="menuToggle"
                 type="button"
-                aria-label="فتح القائمة"
-                aria-expanded="false">
+                aria-label="فتح القائمة">
 
                 <span></span>
                 <span></span>
@@ -126,24 +128,17 @@
 
                         <span class="eyebrow-dot"></span>
 
-                        <span
-                            data-ar="Mental Wellness"
-                            data-en="Mental Wellness">
+                        <span data-i18n="hero.kicker">
                             Mental Wellness
                         </span>
 
                     </div>
 
-                    <h1
-                        data-ar="مساحة هادئة للعناية بنفسك"
-                        data-en="A calm space to care for yourself">
+                    <h1 data-i18n="hero.title">
                         مساحة هادئة للعناية بنفسك
                     </h1>
 
-                    <p
-                        class="hero-lead"
-                        data-ar="MindCare تمنحك مساحة آمنة وهادئة لفهم ما تمر به، واستكشاف احتياجاتك النفسية، والوصول إلى مختص مناسب عندما تحتاج إلى الدعم."
-                        data-en="MindCare gives you a calm space to understand what you are experiencing, explore your needs and find suitable professional support.">
+                    <p class="hero-lead" data-i18n="hero.description">
                         MindCare تمنحك مساحة آمنة وهادئة لفهم ما تمر به،
                         واستكشاف احتياجاتك النفسية، والوصول إلى مختص مناسب
                         عندما تحتاج إلى الدعم.
@@ -156,15 +151,21 @@
                             type="button"
                             data-open-booking>
 
-                            ابدأ الحجز
+                            <span data-i18n="buttons.book">
+                                ابدأ الحجز
+                            </span>
+
                             <i class="fa-solid fa-arrow-left"></i>
 
                         </button>
 
                         <a
                             href="#specialists"
-                            class="btn btn-outline">
+                            class="btn btn-outline"
+                            data-i18n="buttons.specialists">
+
                             استكشف المختصين
+
                         </a>
 
                     </div>
@@ -173,7 +174,7 @@
 
                         <i class="fa-solid fa-shield-heart"></i>
 
-                        <span>
+                        <span data-i18n="hero.privacy">
                             خصوصيتك وراحتك جزء أساسي من التجربة
                         </span>
 
@@ -191,8 +192,13 @@
                         <div class="visual-top">
 
                             <span class="visual-status">
+
                                 <span class="status-dot"></span>
-                                مساحة آمنة
+
+                                <span data-i18n="hero.safe">
+                                    مساحة آمنة
+                                </span>
+
                             </span>
 
                             <i class="fa-regular fa-heart"></i>
@@ -221,13 +227,15 @@
 
                         <div class="visual-message">
 
-                            <small>خذ وقتك</small>
+                            <small data-i18n="hero.takeTime">
+                                خذ وقتك
+                            </small>
 
-                            <strong>
+                            <strong data-i18n="hero.understand">
                                 افهم نفسك بشكل أفضل
                             </strong>
 
-                            <p>
+                            <p data-i18n="hero.smallText">
                                 خطوة صغيرة نحو فهم مشاعرك قد تكون بداية تغيير مهم.
                             </p>
 
@@ -242,8 +250,15 @@
                         </span>
 
                         <div>
-                            <small>وقتك</small>
-                            <strong>اختر الموعد المناسب</strong>
+
+                            <small data-i18n="hero.yourTime">
+                                وقتك
+                            </small>
+
+                            <strong data-i18n="hero.chooseTime">
+                                اختر الموعد المناسب
+                            </strong>
+
                         </div>
 
                     </div>
@@ -255,8 +270,15 @@
                         </span>
 
                         <div>
-                            <small>بدون أحكام</small>
-                            <strong>أنت تستحق أن تُفهم</strong>
+
+                            <small data-i18n="hero.noJudgment">
+                                بدون أحكام
+                            </small>
+
+                            <strong data-i18n="hero.deserve">
+                                أنت تستحق أن تُفهم
+                            </strong>
+
                         </div>
 
                     </div>
@@ -280,9 +302,11 @@
 
                     <div>
 
-                        <small>لماذا MindCare؟</small>
+                        <small data-i18n="intro.kicker">
+                            لماذا MindCare؟
+                        </small>
 
-                        <h2>
+                        <h2 data-i18n="intro.title">
                             الصحة النفسية ليست فقط وقت الأزمات.
                         </h2>
 
@@ -292,15 +316,22 @@
 
                 <div class="intro-copy">
 
-                    <p>
+                    <p data-i18n="intro.text">
                         قد تحتاج إلى شخص يساعدك على فهم القلق،
                         التعامل مع ضغوط الحياة، تحسين علاقتك بنفسك
                         أو بالآخرين، أو التعامل مع تجربة صعبة مررت بها.
                     </p>
 
-                    <a href="#topics" class="text-link">
-                        استكشف الموضوعات
+                    <a
+                        href="#topics"
+                        class="text-link">
+
+                        <span data-i18n="intro.link">
+                            استكشف الموضوعات
+                        </span>
+
                         <i class="fa-solid fa-arrow-left"></i>
+
                     </a>
 
                 </div>
@@ -312,7 +343,9 @@
 
         <!-- ================= TOPICS ================= -->
 
-        <section class="topics-section section-padding" id="topics">
+        <section
+            class="topics-section section-padding"
+            id="topics">
 
             <div class="container">
 
@@ -320,17 +353,21 @@
 
                     <div>
 
-                        <span class="section-kicker">
+                        <span
+                            class="section-kicker"
+                            data-i18n="topics.kicker">
+
                             افهم ما تمر به
+
                         </span>
 
-                        <h2>
+                        <h2 data-i18n="topics.title">
                             موضوعات نفسية تستحق أن تعرف عنها أكثر
                         </h2>
 
                     </div>
 
-                    <p>
+                    <p data-i18n="topics.description">
                         المعرفة لا تعني تشخيص نفسك.
                         هذه المعلومات تساعدك على فهم بعض العلامات
                         التي قد تستحق التحدث عنها مع مختص.
@@ -341,7 +378,10 @@
 
                 <div class="topics-grid">
 
-                    <button class="topic-card" data-topic="anxiety">
+                    <button
+                        class="topic-card"
+                        type="button"
+                        data-topic="anxiety">
 
                         <span class="topic-number">01</span>
 
@@ -349,21 +389,28 @@
                             <i class="fa-solid fa-wind"></i>
                         </span>
 
-                        <h3>القلق والتوتر</h3>
+                        <h3 data-i18n="topic.anxiety.title">
+                            القلق والتوتر
+                        </h3>
 
-                        <p>
+                        <p data-i18n="topic.anxiety.short">
                             افهم القلق وأعراضه وتأثيره على الحياة اليومية.
                         </p>
 
                         <span class="card-link">
-                            اعرف أكثر
+                            <span data-i18n="buttons.learn">
+                                اعرف أكثر
+                            </span>
                             <i class="fa-solid fa-arrow-left"></i>
                         </span>
 
                     </button>
 
 
-                    <button class="topic-card" data-topic="depression">
+                    <button
+                        class="topic-card"
+                        type="button"
+                        data-topic="depression">
 
                         <span class="topic-number">02</span>
 
@@ -371,21 +418,28 @@
                             <i class="fa-regular fa-cloud"></i>
                         </span>
 
-                        <h3>الاكتئاب</h3>
+                        <h3 data-i18n="topic.depression.title">
+                            الاكتئاب
+                        </h3>
 
-                        <p>
+                        <p data-i18n="topic.depression.short">
                             تعرف على العلامات الشائعة للاكتئاب وتأثيره.
                         </p>
 
                         <span class="card-link">
-                            اعرف أكثر
+                            <span data-i18n="buttons.learn">
+                                اعرف أكثر
+                            </span>
                             <i class="fa-solid fa-arrow-left"></i>
                         </span>
 
                     </button>
 
 
-                    <button class="topic-card" data-topic="panic">
+                    <button
+                        class="topic-card"
+                        type="button"
+                        data-topic="panic">
 
                         <span class="topic-number">03</span>
 
@@ -393,21 +447,28 @@
                             <i class="fa-solid fa-heart-pulse"></i>
                         </span>
 
-                        <h3>نوبات الهلع</h3>
+                        <h3 data-i18n="topic.panic.title">
+                            نوبات الهلع
+                        </h3>
 
-                        <p>
+                        <p data-i18n="topic.panic.short">
                             تعرف على أعراض نوبات الهلع والفرق بينها وبين القلق.
                         </p>
 
                         <span class="card-link">
-                            اعرف أكثر
+                            <span data-i18n="buttons.learn">
+                                اعرف أكثر
+                            </span>
                             <i class="fa-solid fa-arrow-left"></i>
                         </span>
 
                     </button>
 
 
-                    <button class="topic-card" data-topic="ocd">
+                    <button
+                        class="topic-card"
+                        type="button"
+                        data-topic="ocd">
 
                         <span class="topic-number">04</span>
 
@@ -415,21 +476,28 @@
                             <i class="fa-solid fa-arrows-rotate"></i>
                         </span>
 
-                        <h3>الوسواس القهري</h3>
+                        <h3 data-i18n="topic.ocd.title">
+                            الوسواس القهري
+                        </h3>
 
-                        <p>
+                        <p data-i18n="topic.ocd.short">
                             افهم الأفكار المتكررة والسلوكيات القهرية.
                         </p>
 
                         <span class="card-link">
-                            اعرف أكثر
+                            <span data-i18n="buttons.learn">
+                                اعرف أكثر
+                            </span>
                             <i class="fa-solid fa-arrow-left"></i>
                         </span>
 
                     </button>
 
 
-                    <button class="topic-card" data-topic="trauma">
+                    <button
+                        class="topic-card"
+                        type="button"
+                        data-topic="trauma">
 
                         <span class="topic-number">05</span>
 
@@ -437,21 +505,28 @@
                             <i class="fa-solid fa-feather"></i>
                         </span>
 
-                        <h3>الصدمات النفسية</h3>
+                        <h3 data-i18n="topic.trauma.title">
+                            الصدمات النفسية
+                        </h3>
 
-                        <p>
+                        <p data-i18n="topic.trauma.short">
                             تعرف على بعض التأثيرات التي قد تظهر بعد التجارب المؤلمة.
                         </p>
 
                         <span class="card-link">
-                            اعرف أكثر
+                            <span data-i18n="buttons.learn">
+                                اعرف أكثر
+                            </span>
                             <i class="fa-solid fa-arrow-left"></i>
                         </span>
 
                     </button>
 
 
-                    <button class="topic-card" data-topic="sleep">
+                    <button
+                        class="topic-card"
+                        type="button"
+                        data-topic="sleep">
 
                         <span class="topic-number">06</span>
 
@@ -459,14 +534,18 @@
                             <i class="fa-regular fa-moon"></i>
                         </span>
 
-                        <h3>النوم والصحة النفسية</h3>
+                        <h3 data-i18n="topic.sleep.title">
+                            النوم والصحة النفسية
+                        </h3>
 
-                        <p>
+                        <p data-i18n="topic.sleep.short">
                             افهم العلاقة بين النوم والمزاج والطاقة والتركيز.
                         </p>
 
                         <span class="card-link">
-                            اعرف أكثر
+                            <span data-i18n="buttons.learn">
+                                اعرف أكثر
+                            </span>
                             <i class="fa-solid fa-arrow-left"></i>
                         </span>
 
@@ -528,6 +607,7 @@
                             data-topic="addiction">
 
                             تعرف على الإدمان
+
                             <i class="fa-solid fa-arrow-left"></i>
 
                         </button>
@@ -583,10 +663,11 @@
 
                     <button
                         class="text-link large-link"
-                        data-topic="self-esteem"
-                        type="button">
+                        type="button"
+                        data-topic="self-esteem">
 
                         استكشف الموضوع
+
                         <i class="fa-solid fa-arrow-left"></i>
 
                     </button>
@@ -643,13 +724,16 @@
 
                     <button
                         class="relationship-card"
+                        type="button"
                         data-topic="relationships">
 
                         <span class="relationship-icon">
                             <i class="fa-solid fa-heart"></i>
                         </span>
 
-                        <h3>العلاقات العاطفية</h3>
+                        <h3>
+                            العلاقات العاطفية
+                        </h3>
 
                         <span class="card-link">
                             اعرف أكثر
@@ -661,13 +745,16 @@
 
                     <button
                         class="relationship-card"
+                        type="button"
                         data-topic="family">
 
                         <span class="relationship-icon">
                             <i class="fa-solid fa-house"></i>
                         </span>
 
-                        <h3>العلاقات الأسرية</h3>
+                        <h3>
+                            العلاقات الأسرية
+                        </h3>
 
                         <span class="card-link">
                             اعرف أكثر
@@ -679,13 +766,16 @@
 
                     <button
                         class="relationship-card"
+                        type="button"
                         data-topic="communication">
 
                         <span class="relationship-icon">
                             <i class="fa-solid fa-comments"></i>
                         </span>
 
-                        <h3>التواصل والحدود</h3>
+                        <h3>
+                            التواصل والحدود
+                        </h3>
 
                         <span class="card-link">
                             اعرف أكثر
@@ -726,7 +816,9 @@
                 </div>
 
 
-                <div class="specialists-grid" id="specialistsGrid">
+                <div class="specialists-grid">
+
+                    <!-- TASBEH -->
 
                     <article class="specialist-card">
 
@@ -740,7 +832,9 @@
                                 CLINICAL PSYCHOLOGY
                             </span>
 
-                            <h3>Tasbeh Mohamed</h3>
+                            <h3>
+                                Tasbeh Mohamed
+                            </h3>
 
                             <p>
                                 حاصلة على دبلومة في علم النفس الإكلينيكي،
@@ -752,17 +846,21 @@
 
                                 <button
                                     class="btn btn-soft"
-                                    data-provider="tasbeh"
-                                    type="button">
+                                    type="button"
+                                    data-provider="tasbeh">
+
                                     عرض الملف
+
                                 </button>
 
                                 <button
                                     class="btn btn-primary"
+                                    type="button"
                                     data-open-booking
-                                    data-selected-provider="Tasbeh Mohamed"
-                                    type="button">
+                                    data-selected-provider="Tasbeh Mohamed">
+
                                     احجز موعد
+
                                 </button>
 
                             </div>
@@ -771,6 +869,8 @@
 
                     </article>
 
+
+                    <!-- MARIAM -->
 
                     <article class="specialist-card">
 
@@ -784,7 +884,9 @@
                                 CLINICAL PSYCHOLOGY
                             </span>
 
-                            <h3>Mariam Mahmoud</h3>
+                            <h3>
+                                Mariam Mahmoud
+                            </h3>
 
                             <p>
                                 حاصلة على دبلومة في علم النفس الإكلينيكي،
@@ -796,17 +898,21 @@
 
                                 <button
                                     class="btn btn-soft"
-                                    data-provider="mariam"
-                                    type="button">
+                                    type="button"
+                                    data-provider="mariam">
+
                                     عرض الملف
+
                                 </button>
 
                                 <button
                                     class="btn btn-primary"
+                                    type="button"
                                     data-open-booking
-                                    data-selected-provider="Mariam Mahmoud"
-                                    type="button">
+                                    data-selected-provider="Mariam Mahmoud">
+
                                     احجز موعد
+
                                 </button>
 
                             </div>
@@ -846,6 +952,7 @@
                 <div class="steps-grid">
 
                     <article class="step-card">
+
                         <span class="step-number">01</span>
 
                         <span class="step-icon">
@@ -858,10 +965,12 @@
                             تعرف على الموضوعات النفسية والمجالات
                             التي قد تكون قريبة من تجربتك.
                         </p>
+
                     </article>
 
 
                     <article class="step-card">
+
                         <span class="step-number">02</span>
 
                         <span class="step-icon">
@@ -874,10 +983,12 @@
                             تعرف على المختصين واختر الشخص
                             الذي يناسب احتياجك.
                         </p>
+
                     </article>
 
 
                     <article class="step-card">
+
                         <span class="step-number">03</span>
 
                         <span class="step-icon">
@@ -889,10 +1000,12 @@
                         <p>
                             اختر اليوم والوقت المناسبين لك.
                         </p>
+
                     </article>
 
 
                     <article class="step-card">
+
                         <span class="step-number">04</span>
 
                         <span class="step-icon">
@@ -904,6 +1017,7 @@
                         <p>
                             أكمل بيانات الحجز وابدأ خطوتك القادمة.
                         </p>
+
                     </article>
 
                 </div>
@@ -942,6 +1056,7 @@
                             type="button">
 
                             ابدأ التقييم
+
                             <i class="fa-solid fa-arrow-left"></i>
 
                         </button>
@@ -1169,10 +1284,11 @@
 
                         <button
                             class="btn btn-primary"
-                            data-open-booking
-                            type="button">
+                            type="button"
+                            data-open-booking>
 
                             ابدأ الحجز
+
                             <i class="fa-solid fa-arrow-left"></i>
 
                         </button>
@@ -1180,7 +1296,9 @@
                         <a
                             href="#specialists"
                             class="btn btn-light">
+
                             استكشف المختصين
+
                         </a>
 
                     </div>
@@ -1229,9 +1347,17 @@
 
                     <h3>روابط</h3>
 
-                    <a href="#specialists">المختصون</a>
-                    <a href="#topics">الموضوعات</a>
-                    <a href="#faq">الأسئلة الشائعة</a>
+                    <a href="#specialists">
+                        المختصون
+                    </a>
+
+                    <a href="#topics">
+                        الموضوعات
+                    </a>
+
+                    <a href="#faq">
+                        الأسئلة الشائعة
+                    </a>
 
                 </div>
 
@@ -1240,19 +1366,19 @@
 
                     <h3>الموضوعات</h3>
 
-                    <button data-topic="anxiety">
+                    <button type="button" data-topic="anxiety">
                         القلق
                     </button>
 
-                    <button data-topic="depression">
+                    <button type="button" data-topic="depression">
                         الاكتئاب
                     </button>
 
-                    <button data-topic="addiction">
+                    <button type="button" data-topic="addiction">
                         الإدمان
                     </button>
 
-                    <button data-topic="self-esteem">
+                    <button type="button" data-topic="self-esteem">
                         الثقة بالنفس
                     </button>
 
@@ -1290,10 +1416,7 @@
             data-close-modal>
         </div>
 
-        <div
-            class="modal-box topic-modal-box"
-            role="dialog"
-            aria-modal="true">
+        <div class="modal-box topic-modal-box">
 
             <button
                 class="modal-close"
@@ -1324,16 +1447,12 @@
             data-close-modal>
         </div>
 
-        <div
-            class="modal-box"
-            role="dialog"
-            aria-modal="true">
+        <div class="modal-box">
 
             <button
                 class="modal-close"
                 type="button"
-                data-close-modal
-                aria-label="إغلاق">
+                data-close-modal>
 
                 <i class="fa-solid fa-xmark"></i>
 
@@ -1358,16 +1477,12 @@
             data-close-modal>
         </div>
 
-        <div
-            class="modal-box booking-box"
-            role="dialog"
-            aria-modal="true">
+        <div class="modal-box booking-box">
 
             <button
                 class="modal-close"
                 type="button"
-                data-close-modal
-                aria-label="إغلاق">
+                data-close-modal>
 
                 <i class="fa-solid fa-xmark"></i>
 
@@ -1382,7 +1497,7 @@
             </h2>
 
             <p class="modal-intro">
-                اختر المختص والموعد المتاح ثم أكمل بيانات الحجز.
+                املأ البيانات الأساسية وسنستخدمها لإرسال طلب الحجز.
             </p>
 
             <form id="bookingForm">
@@ -1397,7 +1512,6 @@
                         id="bookingName"
                         name="name"
                         type="text"
-                        autocomplete="name"
                         required
                         placeholder="اكتب اسمك">
 
@@ -1414,7 +1528,6 @@
                         id="bookingPhone"
                         name="phone"
                         type="tel"
-                        autocomplete="tel"
                         required
                         placeholder="01xxxxxxxxx">
 
@@ -1452,7 +1565,7 @@
                 <div class="form-group">
 
                     <label for="bookingDate">
-                        التاريخ
+                        التاريخ المفضل
                     </label>
 
                     <input
@@ -1466,26 +1579,15 @@
 
                 <div class="form-group">
 
-                    <label for="bookingSlot">
-                        الموعد المتاح
+                    <label for="bookingTime">
+                        الوقت المفضل
                     </label>
 
-                    <select
-                        id="bookingSlot"
-                        name="slotId"
-                        required
-                        disabled>
-
-                        <option value="">
-                            اختر المختص والتاريخ أولًا
-                        </option>
-
-                    </select>
-
-                    <small
-                        id="slotStatus"
-                        class="field-hint">
-                    </small>
+                    <input
+                        id="bookingTime"
+                        name="time"
+                        type="time"
+                        required>
 
                 </div>
 
@@ -1500,7 +1602,6 @@
                         id="bookingMessage"
                         name="message"
                         rows="4"
-                        maxlength="1000"
                         placeholder="اكتب أي ملاحظة تريد مشاركتها..."></textarea>
 
                 </div>
@@ -1508,8 +1609,7 @@
 
                 <button
                     class="btn btn-primary full-width"
-                    type="submit"
-                    id="bookingSubmit">
+                    type="submit">
 
                     إرسال طلب الحجز
 
@@ -1541,16 +1641,12 @@
             data-close-modal>
         </div>
 
-        <div
-            class="modal-box assessment-box"
-            role="dialog"
-            aria-modal="true">
+        <div class="modal-box assessment-box">
 
             <button
                 class="modal-close"
                 type="button"
-                data-close-modal
-                aria-label="إغلاق">
+                data-close-modal>
 
                 <i class="fa-solid fa-xmark"></i>
 
@@ -1587,10 +1683,6 @@
     </div>
 
 
-    <!-- Firebase configuration if available -->
-    <script src="firebase-config.js"></script>
-
-    <!-- Main application -->
     <script src="script.js"></script>
 
 </body>
