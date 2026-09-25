@@ -1,27 +1,210 @@
 /* =========================================================
    MINDCARE
-   Main Front-End Script
-   Design baseline: index(6).html
+   Main Application
+   Firebase + UI + Booking + Assessment
    Prepared By: Eng Ahmad Ramadan
 ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+(() => {
     "use strict";
 
     /* =====================================================
-       CONFIG
+       FIREBASE CONFIG
     ===================================================== */
 
-    const LANGUAGE_KEY = "mindcare_language";
+    const FIREBASE_CONFIG =
+        window.MINDCARE_FIREBASE_CONFIG || {
+            apiKey: "AIzaSyD6E8kmMBKOglip9zACDDYTPEf54FxvBZ4",
+            authDomain: "mind-care-e7743.firebaseapp.com",
+            projectId: "mind-care-e7743",
+            storageBucket: "mind-care-e7743.firebasestorage.app",
+            messagingSenderId: "50815788969",
+            appId: "1:50815788969:web:0bcf23ec8b0a8b73a286b8",
+            measurementId: "G-K4FP94QFPH"
+        };
 
-    const state = {
-        language: localStorage.getItem(LANGUAGE_KEY) || "ar",
-        topics: [],
-        providers: [],
-        faq: [],
-        assessmentStep: 0,
-        assessmentAnswers: []
+    let firebaseReady = false;
+    let db = null;
+
+    /* =====================================================
+       FALLBACK DATA
+    ===================================================== */
+
+    const TOPICS = {
+
+        anxiety: {
+            title: "القلق والتوتر",
+            icon: "fa-wind",
+            intro:
+                "القلق استجابة طبيعية يمكن أن تظهر عند الشعور بالضغط أو عدم اليقين، لكنه قد يصبح مرهقًا عندما يكون مستمرًا أو يؤثر على الحياة اليومية.",
+            points: [
+                "التفكير الزائد وصعوبة إيقاف الأفكار",
+                "الشعور بالتوتر أو عدم الارتياح",
+                "صعوبة التركيز",
+                "اضطراب النوم",
+                "أعراض جسدية مثل تسارع ضربات القلب أو التوتر العضلي"
+            ]
+        },
+
+        depression: {
+            title: "الاكتئاب",
+            icon: "fa-cloud",
+            intro:
+                "الاكتئاب قد يؤثر على المزاج والطاقة والاهتمام بالأشياء اليومية، وتختلف تجربته من شخص لآخر.",
+            points: [
+                "الحزن أو انخفاض المزاج لفترة مستمرة",
+                "فقدان الاهتمام أو المتعة",
+                "الإرهاق وانخفاض الطاقة",
+                "تغيرات في النوم أو الشهية",
+                "صعوبة التركيز أو إنجاز المهام"
+            ]
+        },
+
+        panic: {
+            title: "نوبات الهلع",
+            icon: "fa-heart-pulse",
+            intro:
+                "نوبة الهلع قد تحدث بصورة مفاجئة وتتضمن خوفًا شديدًا وأعراضًا جسدية قوية.",
+            points: [
+                "خفقان القلب",
+                "ضيق النفس",
+                "الدوخة أو الشعور بعدم الثبات",
+                "التعرق أو الرجفة",
+                "الشعور بفقدان السيطرة"
+            ]
+        },
+
+        ocd: {
+            title: "الوسواس القهري",
+            icon: "fa-arrows-rotate",
+            intro:
+                "الوسواس القهري قد يتضمن أفكارًا أو مخاوف متكررة وسلوكيات أو أفعالًا يشعر الشخص بدافع قوي لتكرارها.",
+            points: [
+                "أفكار أو صور ذهنية متكررة",
+                "الحاجة إلى القيام بأفعال معينة لتخفيف القلق",
+                "صعوبة تجاهل الأفكار المتكررة",
+                "استهلاك وقت كبير في الطقوس أو التفكير",
+                "تأثير ذلك على الحياة اليومية"
+            ]
+        },
+
+        trauma: {
+            title: "الصدمات النفسية",
+            icon: "fa-feather",
+            intro:
+                "بعد بعض التجارب المؤلمة قد تظهر تغيرات في المشاعر أو النوم أو الشعور بالأمان.",
+            points: [
+                "ذكريات مزعجة أو متكررة",
+                "تجنب أشياء مرتبطة بالتجربة",
+                "زيادة التوتر أو اليقظة",
+                "اضطرابات النوم",
+                "تغيرات في المشاعر أو العلاقات"
+            ]
+        },
+
+        sleep: {
+            title: "النوم والصحة النفسية",
+            icon: "fa-moon",
+            intro:
+                "النوم والصحة النفسية يؤثر كل منهما في الآخر، وقد يؤثر اضطراب النوم على المزاج والطاقة والتركيز.",
+            points: [
+                "صعوبة الدخول في النوم",
+                "الاستيقاظ المتكرر",
+                "النوم لفترات طويلة دون الشعور بالراحة",
+                "الإرهاق أثناء اليوم",
+                "تأثر التركيز والمزاج"
+            ]
+        },
+
+        addiction: {
+            title: "الإدمان واستخدام المواد",
+            icon: "fa-hand-holding-heart",
+            intro:
+                "يمكن أن يصبح استخدام مادة أو القيام بسلوك معين مشكلة عندما يصعب التحكم فيه ويبدأ في التأثير على الحياة أو العلاقات أو الصحة.",
+            points: [
+                "صعوبة التحكم في الاستخدام",
+                "الاستمرار رغم ظهور أضرار واضحة",
+                "التأثير على العمل أو الدراسة",
+                "التأثير على العلاقات",
+                "محاولات متكررة للتقليل أو التوقف دون نجاح"
+            ]
+        },
+
+        "self-esteem": {
+            title: "الثقة بالنفس وتقدير الذات",
+            icon: "fa-heart",
+            intro:
+                "تقدير الذات يرتبط بالطريقة التي ينظر بها الشخص إلى نفسه وقيمته، وقد يتأثر بالتجارب والمقارنات والعلاقات.",
+            points: [
+                "النقد المستمر للنفس",
+                "المقارنة المستمرة بالآخرين",
+                "الخوف الشديد من الخطأ",
+                "صعوبة وضع الحدود",
+                "ربط القيمة الشخصية بالكمال"
+            ]
+        },
+
+        relationships: {
+            title: "العلاقات العاطفية",
+            icon: "fa-heart",
+            intro:
+                "العلاقات الصحية تحتاج إلى تواصل واضح وحدود واحترام متبادل.",
+            points: [
+                "صعوبة التعبير عن الاحتياجات",
+                "الخلافات المتكررة",
+                "الغيرة أو عدم الأمان",
+                "صعوبة وضع الحدود",
+                "أنماط تواصل غير فعالة"
+            ]
+        },
+
+        family: {
+            title: "العلاقات الأسرية",
+            icon: "fa-house",
+            intro:
+                "العلاقات الأسرية قد تكون مصدر دعم مهم، لكنها قد تتضمن أيضًا ضغوطًا وخلافات تحتاج إلى فهم وتواصل.",
+            points: [
+                "الخلافات المتكررة",
+                "صعوبة التواصل",
+                "اختلاف التوقعات",
+                "الحدود الشخصية",
+                "التعامل مع الضغوط الأسرية"
+            ]
+        },
+
+        communication: {
+            title: "التواصل والحدود",
+            icon: "fa-comments",
+            intro:
+                "التواصل الواضح ووضع الحدود الصحية يساعدان على بناء علاقات أكثر توازنًا.",
+            points: [
+                "التعبير الواضح عن الاحتياجات",
+                "قول لا عند الحاجة",
+                "الاستماع للآخر",
+                "التعامل مع الخلافات",
+                "احترام الحدود المتبادلة"
+            ]
+        }
     };
+
+
+    const PROVIDERS = {
+
+        tasbeh: {
+            name: "Tasbeh Mohamed",
+            specialty: "Clinical Psychology",
+            bio:
+                "حاصلة على دبلومة في علم النفس الإكلينيكي، وخريجة قسم علم النفس الإكلينيكي بكلية الآداب، مع اهتمام بالصحة النفسية والعلاقات والنمو الشخصي."
+        },
+
+        mariam: {
+            name: "Mariam Mahmoud",
+            specialty: "Clinical Psychology",
+            bio:
+                "حاصلة على دبلومة في علم النفس الإكلينيكي، وخريجة قسم علم النفس الإكلينيكي بكلية الآداب، مع اهتمام بالمشاعر والعلاقات والتحديات الشخصية."
+        }
+    };
+
 
     /* =====================================================
        DOM HELPERS
@@ -33,1213 +216,1477 @@ document.addEventListener("DOMContentLoaded", () => {
     const $$ = (selector, parent = document) =>
         Array.from(parent.querySelectorAll(selector));
 
-    const html = document.documentElement;
 
-    /* =====================================================
-       LOCAL FALLBACK DATA
-       Used if Firebase data is unavailable
-    ===================================================== */
+    const escapeHTML = (value) => {
 
-    const fallbackTopics = [
-        {
-            key: "anxiety",
-            titleAr: "القلق والتوتر",
-            titleEn: "Anxiety & Stress",
-            descriptionAr:
-                "مساحة لفهم مشاعر القلق والتوتر والتعامل معها بخطوات عملية وداعمة.",
-            descriptionEn:
-                "A supportive space to understand anxiety and stress and work with them through practical steps.",
-            symptoms: [
-                "التفكير الزائد",
-                "التوتر المستمر",
-                "صعوبة الاسترخاء",
-                "الخوف أو القلق المتكرر"
-            ]
-        },
-        {
-            key: "relationships",
-            titleAr: "العلاقات",
-            titleEn: "Relationships",
-            descriptionAr:
-                "مساعدة على فهم أنماط العلاقات، الحدود، التواصل والاحتياجات العاطفية.",
-            descriptionEn:
-                "Support for understanding relationship patterns, boundaries, communication and emotional needs.",
-            symptoms: [
-                "مشكلات التواصل",
-                "الخلافات المتكررة",
-                "صعوبة وضع الحدود",
-                "الخوف من فقدان العلاقة"
-            ]
-        },
-        {
-            key: "self-esteem",
-            titleAr: "الثقة بالنفس",
-            titleEn: "Self-Esteem",
-            descriptionAr:
-                "استكشاف الصورة الذاتية وبناء علاقة أكثر توازنًا مع نفسك.",
-            descriptionEn:
-                "Explore self-image and develop a healthier relationship with yourself.",
-            symptoms: [
-                "انتقاد الذات",
-                "الشعور بعدم الكفاية",
-                "المقارنة بالآخرين",
-                "الخوف من الفشل"
-            ]
-        },
-        {
-            key: "personal-growth",
-            titleAr: "النمو الشخصي",
-            titleEn: "Personal Growth",
-            descriptionAr:
-                "رحلة لفهم نفسك وأهدافك واتخاذ خطوات أكثر وضوحًا في حياتك.",
-            descriptionEn:
-                "A journey toward understanding yourself, your goals and taking clearer steps in life.",
-            symptoms: [
-                "الحيرة",
-                "قلة الدافعية",
-                "صعوبة اتخاذ القرارات",
-                "الرغبة في تغيير نمط الحياة"
-            ]
-        },
-        {
-            key: "family",
-            titleAr: "الدعم الأسري",
-            titleEn: "Family Support",
-            descriptionAr:
-                "مساحة لفهم التحديات الأسرية وتحسين التواصل داخل الأسرة.",
-            descriptionEn:
-                "Support for understanding family challenges and improving communication within the family.",
-            symptoms: [
-                "الخلافات الأسرية",
-                "صعوبة التواصل",
-                "اختلاف وجهات النظر",
-                "الضغط الأسري"
-            ]
-        },
-        {
-            key: "addiction",
-            titleAr: "التعافي من الإدمان",
-            titleEn: "Addiction Recovery",
-            descriptionAr:
-                "دعم نفسي يساعد على فهم السلوكيات الإدمانية وبناء خطوات نحو التعافي.",
-            descriptionEn:
-                "Psychological support for understanding addictive behaviors and building steps toward recovery.",
-            symptoms: [
-                "فقدان السيطرة",
-                "الرغبة القهرية",
-                "محاولات التوقف المتكررة",
-                "تأثير السلوك على الحياة اليومية"
-            ]
-        }
-    ];
+        const div = document.createElement("div");
 
-    const fallbackProviders = [
-        {
-            nameAr: "فريق MindCare",
-            nameEn: "MindCare Team",
-            specialtyAr: "الدعم النفسي والنمو الشخصي",
-            specialtyEn: "Mental Wellness & Personal Growth",
-            bioAr:
-                "فريق متخصص يهدف إلى توفير مساحة آمنة ومحترمة لفهم التحديات النفسية والشخصية.",
-            bioEn:
-                "A supportive team focused on creating a safe and respectful space for personal and emotional challenges."
-        }
-    ];
+        div.textContent = value ?? "";
 
-    const fallbackFAQ = [
-        {
-            qAr: "كيف يمكنني حجز جلسة؟",
-            qEn: "How can I book a session?",
-            aAr:
-                "اضغط على أي زر «احجز الآن» ثم اختر المتخصص والتاريخ والوقت المتاح من المواعيد التي قام المسؤول بإضافتها.",
-            aEn:
-                "Click any “Book a session” button, then choose a specialist, date and available time from the slots created by the administrator."
-        },
-        {
-            qAr: "هل يمكنني اختيار الموعد بنفسي؟",
-            qEn: "Can I choose my appointment time?",
-            aAr:
-                "نعم. ستظهر لك فقط المواعيد المتاحة التي تم إضافتها مسبقًا من إدارة الموقع.",
-            aEn:
-                "Yes. You will only see available appointment slots previously added by the website administrator."
-        },
-        {
-            qAr: "هل بياناتي خاصة؟",
-            qEn: "Is my information private?",
-            aAr:
-                "نحن نتعامل مع بيانات الحجز باعتبارها معلومات خاصة ونستخدمها فقط لإدارة طلب الحجز والتواصل المتعلق به.",
-            aEn:
-                "Booking information is treated as private and is used to manage your booking request and related communication."
-        },
-        {
-            qAr: "هل يمكنني إلغاء الحجز؟",
-            qEn: "Can I cancel my booking?",
-            aAr:
-                "يمكن إلغاء الحجز من خلال آلية الإلغاء المتاحة للحجز. إذا لم تظهر لك آلية الإلغاء، تواصل مع إدارة الموقع.",
-            aEn:
-                "A booking can be cancelled through the available cancellation process. If it is not available, contact the website administration."
-        },
-        {
-            qAr: "هل يمكنني استخدام الموقع باللغة الإنجليزية؟",
-            qEn: "Can I use the website in English?",
-            aAr:
-                "نعم. اضغط على زر اللغة أعلى الصفحة للتبديل بين العربية والإنجليزية.",
-            aEn:
-                "Yes. Use the language button at the top of the page to switch between Arabic and English."
-        }
-    ];
+        return div.innerHTML;
+    };
 
-    /* =====================================================
-       LANGUAGE
-    ===================================================== */
-
-    function applyLanguage(lang) {
-        state.language = lang === "en" ? "en" : "ar";
-
-        localStorage.setItem(LANGUAGE_KEY, state.language);
-
-        html.lang = state.language;
-        html.dir = state.language === "ar" ? "rtl" : "ltr";
-
-        $$("[data-ar][data-en]").forEach(element => {
-            const value =
-                state.language === "ar"
-                    ? element.dataset.ar
-                    : element.dataset.en;
-
-            if (value !== undefined) {
-                element.textContent = value;
-            }
-        });
-
-        $$("[data-placeholder-ar][data-placeholder-en]").forEach(element => {
-            element.placeholder =
-                state.language === "ar"
-                    ? element.dataset.placeholderAr
-                    : element.dataset.placeholderEn;
-        });
-
-        const languageButton = $("#languageSwitch");
-
-        if (languageButton) {
-            languageButton.textContent =
-                state.language === "ar"
-                    ? "EN"
-                    : "العربية";
-
-            languageButton.setAttribute(
-                "aria-label",
-                state.language === "ar"
-                    ? "Switch to English"
-                    : "التبديل إلى العربية"
-            );
-        }
-
-        updateDocumentMeta();
-        renderDynamicContent();
-    }
-
-    function updateDocumentMeta() {
-        const titleAr = "MindCare | Mental Wellness";
-        const titleEn = "MindCare | Mental Wellness";
-
-        const descriptionAr =
-            "مساحة هادئة لفهم الصحة النفسية والوصول إلى الدعم المناسب.";
-
-        const descriptionEn =
-            "A calm space to understand mental wellness and find the right support.";
-
-        document.title =
-            state.language === "ar"
-                ? titleAr
-                : titleEn;
-
-        const description = $('meta[name="description"]');
-
-        if (description) {
-            description.setAttribute(
-                "content",
-                state.language === "ar"
-                    ? descriptionAr
-                    : descriptionEn
-            );
-        }
-    }
-
-    const languageSwitch = $("#languageSwitch");
-
-    if (languageSwitch) {
-        languageSwitch.addEventListener("click", () => {
-            applyLanguage(
-                state.language === "ar"
-                    ? "en"
-                    : "ar"
-            );
-        });
-    }
-
-    /* =====================================================
-       MOBILE MENU
-    ===================================================== */
-
-    const menuToggle = $("#menuToggle");
-    const mainNav = $("#mainNav");
-
-    if (menuToggle && mainNav) {
-        menuToggle.addEventListener("click", () => {
-            const isOpen =
-                mainNav.classList.toggle("open");
-
-            menuToggle.setAttribute(
-                "aria-expanded",
-                String(isOpen)
-            );
-        });
-
-        $$(".main-nav a", mainNav).forEach(link => {
-            link.addEventListener("click", () => {
-                mainNav.classList.remove("open");
-                menuToggle.setAttribute(
-                    "aria-expanded",
-                    "false"
-                );
-            });
-        });
-    }
-
-    /* =====================================================
-       SMOOTH SCROLL
-    ===================================================== */
-
-    $$("[data-scroll]").forEach(button => {
-        button.addEventListener("click", event => {
-            event.preventDefault();
-
-            const targetId =
-                button.dataset.scroll;
-
-            if (!targetId) return;
-
-            const target =
-                document.getElementById(targetId);
-
-            if (target) {
-                target.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
-            }
-        });
-    });
-
-    /* =====================================================
-       BOOKING
-    ===================================================== */
-
-    function goToBooking() {
-        window.location.href = "booking.html";
-    }
-
-    $$('[data-action="booking"]').forEach(button => {
-        button.addEventListener("click", event => {
-            event.preventDefault();
-            goToBooking();
-        });
-    });
 
     /* =====================================================
        MODAL
     ===================================================== */
 
-    const modalOverlay = $("#modalOverlay");
-    const modalClose = $("#modalClose");
-    const modalContent = $("#modalContent");
+    function openModal(id) {
 
-    function openModal(content) {
-        if (!modalOverlay || !modalContent) return;
+        const modal = document.getElementById(id);
 
-        modalContent.innerHTML = content;
+        if (!modal) return;
 
-        modalOverlay.classList.add("active");
-        modalOverlay.setAttribute("aria-hidden", "false");
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
 
         document.body.classList.add("modal-open");
     }
 
-    function closeModal() {
-        if (!modalOverlay) return;
 
-        modalOverlay.classList.remove("active");
-        modalOverlay.setAttribute("aria-hidden", "true");
+    function closeModal(modal) {
 
-        document.body.classList.remove("modal-open");
-    }
+        if (!modal) return;
 
-    if (modalClose) {
-        modalClose.addEventListener(
-            "click",
-            closeModal
-        );
-    }
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
 
-    if (modalOverlay) {
-        modalOverlay.addEventListener(
-            "click",
-            event => {
-                if (
-                    event.target === modalOverlay
-                ) {
-                    closeModal();
-                }
-            }
-        );
-    }
-
-    document.addEventListener(
-        "keydown",
-        event => {
-            if (event.key === "Escape") {
-                closeModal();
-            }
+        if (!$(".modal.open")) {
+            document.body.classList.remove("modal-open");
         }
-    );
+    }
+
+
+    function closeAllModals() {
+
+        $$(".modal.open").forEach(closeModal);
+    }
+
 
     /* =====================================================
        TOPICS
     ===================================================== */
 
-    function renderTopics() {
-        const container = $("#topicsGrid");
+    async function openTopic(topicKey) {
 
-        if (!container) return;
+        const localTopic = TOPICS[topicKey];
 
-        const topics =
-            state.topics.length
-                ? state.topics
-                : fallbackTopics;
+        if (!localTopic) return;
 
-        container.innerHTML = "";
+        let topic = localTopic;
 
-        topics
-            .filter(topic => topic.active !== false)
-            .forEach(topic => {
-                const title =
-                    state.language === "ar"
-                        ? topic.titleAr
-                        : topic.titleEn;
+        try {
 
-                const description =
-                    state.language === "ar"
-                        ? topic.descriptionAr
-                        : topic.descriptionEn;
+            if (firebaseReady && db) {
 
-                const article =
-                    document.createElement("article");
+                const snapshot = await db
+                    .collection("topics")
+                    .where("key", "==", topicKey)
+                    .limit(1)
+                    .get();
 
-                article.className =
-                    "card topic-card";
+                if (!snapshot.empty) {
 
-                article.innerHTML = `
-                    <div class="card-content">
-                        <h3>${escapeHTML(title || "")}</h3>
+                    const data = snapshot.docs[0].data();
 
-                        <p>
-                            ${escapeHTML(description || "")}
-                        </p>
+                    if (data.active !== false) {
 
-                        <button
-                            class="text-button"
-                            type="button"
-                            data-topic-key="${escapeHTML(topic.key || "")}"
-                        >
-                            ${
-                                state.language === "ar"
-                                    ? "اعرف المزيد"
-                                    : "Learn more"
-                            }
-                        </button>
-                    </div>
-                `;
+                        topic = {
+                            title: data.titleAr || localTopic.title,
+                            icon: localTopic.icon,
+                            intro: data.intro || localTopic.intro,
+                            points: Array.isArray(data.symptoms)
+                                ? data.symptoms
+                                : localTopic.points
+                        };
 
-                container.appendChild(article);
-            });
-
-        $$("[data-topic-key]", container)
-            .forEach(button => {
-                button.addEventListener(
-                    "click",
-                    () => {
-                        const topic =
-                            topics.find(
-                                item =>
-                                    item.key ===
-                                    button.dataset.topicKey
-                            );
-
-                        if (topic) {
-                            openTopic(topic);
-                        }
                     }
-                );
-            });
-    }
-
-    function openTopic(topic) {
-        const title =
-            state.language === "ar"
-                ? topic.titleAr
-                : topic.titleEn;
-
-        const description =
-            state.language === "ar"
-                ? topic.descriptionAr
-                : topic.descriptionEn;
-
-        const symptoms =
-            Array.isArray(topic.symptoms)
-                ? topic.symptoms
-                : [];
-
-        const symptomsTitle =
-            state.language === "ar"
-                ? "قد تشمل التجربة:"
-                : "You may experience:";
-
-        const bookingText =
-            state.language === "ar"
-                ? "احجز جلسة"
-                : "Book a session";
-
-        openModal(`
-            <div class="modal-topic">
-                <h2>${escapeHTML(title || "")}</h2>
-
-                <p>
-                    ${escapeHTML(description || "")}
-                </p>
-
-                ${
-                    symptoms.length
-                        ? `
-                            <h3>${symptomsTitle}</h3>
-                            <ul>
-                                ${symptoms
-                                    .map(
-                                        item =>
-                                            `<li>${escapeHTML(item)}</li>`
-                                    )
-                                    .join("")}
-                            </ul>
-                        `
-                        : ""
                 }
+            }
 
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    data-modal-booking
-                >
-                    ${bookingText}
-                </button>
-            </div>
-        `);
+        } catch (error) {
 
-        const bookingButton =
-            $("[data-modal-booking]");
-
-        if (bookingButton) {
-            bookingButton.addEventListener(
-                "click",
-                goToBooking
+            console.warn(
+                "MindCare: Could not load topic from Firebase.",
+                error
             );
         }
+
+
+        const content = $("#topicModalContent");
+
+        if (!content) return;
+
+        content.innerHTML = `
+
+            <div class="modal-topic-icon">
+                <i class="fa-solid ${escapeHTML(topic.icon)}"></i>
+            </div>
+
+            <span class="section-kicker">
+                معلومات توعوية
+            </span>
+
+            <h2>
+                ${escapeHTML(topic.title)}
+            </h2>
+
+            <div class="modal-content-text">
+
+                <p>
+                    ${escapeHTML(topic.intro)}
+                </p>
+
+                <ul>
+                    ${topic.points.map(point => `
+                        <li>${escapeHTML(point)}</li>
+                    `).join("")}
+                </ul>
+
+                <p style="margin-top:18px;">
+                    هذه المعلومات للتثقيف فقط ولا تمثل تشخيصًا طبيًا.
+                    إذا كانت الأعراض مستمرة أو تؤثر بشكل واضح على حياتك،
+                    يمكن التحدث مع مختص مؤهل.
+                </p>
+
+            </div>
+
+        `;
+
+        openModal("topicModal");
     }
 
+
     /* =====================================================
-       SPECIALISTS
+       PROVIDERS
     ===================================================== */
 
-    function renderProviders() {
-        const container =
-            $("#specialistsGrid");
+    function openProvider(providerKey) {
 
-        if (!container) return;
+        const provider = PROVIDERS[providerKey];
 
-        const providers =
-            state.providers.length
-                ? state.providers
-                : fallbackProviders;
+        if (!provider) return;
 
-        container.innerHTML = "";
+        const content = $("#providerModalContent");
 
-        providers
-            .filter(
-                provider =>
-                    provider.active !== false
-            )
-            .forEach(provider => {
-                const name =
-                    state.language === "ar"
-                        ? provider.nameAr
-                        : provider.nameEn;
+        if (!content) return;
 
-                const specialty =
-                    state.language === "ar"
-                        ? provider.specialtyAr
-                        : provider.specialtyEn;
+        content.innerHTML = `
 
-                const bio =
-                    state.language === "ar"
-                        ? provider.bioAr
-                        : provider.bioEn;
+            <div class="modal-provider-avatar">
+                ${escapeHTML(provider.name.charAt(0))}
+            </div>
 
-                const card =
-                    document.createElement("article");
+            <span class="section-kicker">
+                ${escapeHTML(provider.specialty)}
+            </span>
 
-                card.className =
-                    "specialist-card";
+            <h2>
+                ${escapeHTML(provider.name)}
+            </h2>
 
-                card.innerHTML = `
-                    <div class="specialist-content">
+            <div class="modal-content-text">
 
-                        <div class="specialist-avatar">
-                            ${getInitials(name)}
-                        </div>
+                <p>
+                    ${escapeHTML(provider.bio)}
+                </p>
 
-                        <h3>
-                            ${escapeHTML(name || "")}
-                        </h3>
+            </div>
 
-                        <p class="specialty">
-                            ${escapeHTML(specialty || "")}
-                        </p>
+            <div style="margin-top:25px;">
 
-                        ${
-                            bio
-                                ? `<p>${escapeHTML(bio)}</p>`
-                                : ""
-                        }
+                <button
+                    class="btn btn-primary full-width"
+                    type="button"
+                    data-modal-book-provider="${escapeHTML(provider.name)}">
 
-                        <button
-                            type="button"
-                            class="btn btn-primary"
-                            data-action="booking"
-                        >
-                            ${
-                                state.language === "ar"
-                                    ? "احجز جلسة"
-                                    : "Book a session"
-                            }
-                        </button>
+                    احجز موعدًا مع ${escapeHTML(provider.name)}
 
-                    </div>
-                `;
+                    <i class="fa-solid fa-arrow-left"></i>
 
-                container.appendChild(card);
+                </button>
+
+            </div>
+        `;
+
+        openModal("providerModal");
+    }
+
+
+    /* =====================================================
+       MOBILE MENU
+    ===================================================== */
+
+    function initMobileMenu() {
+
+        const toggle = $("#menuToggle");
+        const nav = $("#mainNav");
+
+        if (!toggle || !nav) return;
+
+        toggle.addEventListener("click", () => {
+
+            const isOpen = nav.classList.toggle("open");
+
+            toggle.classList.toggle("active", isOpen);
+
+            toggle.setAttribute(
+                "aria-expanded",
+                String(isOpen)
+            );
+        });
+
+
+        $$(".nav-link", nav).forEach(link => {
+
+            link.addEventListener("click", () => {
+
+                nav.classList.remove("open");
+                toggle.classList.remove("active");
+                toggle.setAttribute("aria-expanded", "false");
+
             });
 
-        $$(
-            '[data-action="booking"]',
-            container
-        ).forEach(button => {
-            button.addEventListener(
-                "click",
-                goToBooking
-            );
         });
     }
 
-    function getInitials(name = "") {
-        const parts =
-            String(name)
-                .trim()
-                .split(/\s+/)
-                .filter(Boolean);
 
-        if (!parts.length) {
-            return "M";
-        }
+    /* =====================================================
+       NAV ACTIVE STATE
+    ===================================================== */
 
-        if (state.language === "ar") {
-            return parts
-                .slice(0, 2)
-                .map(word => word.charAt(0))
-                .join("");
-        }
+    function initNavigation() {
 
-        return parts
-            .slice(0, 2)
-            .map(word => word.charAt(0))
-            .join("")
-            .toUpperCase();
+        const sections = $$("main section[id]");
+
+        const links = $$(".nav-link");
+
+        if (!sections.length) return;
+
+        const observer = new IntersectionObserver(
+            entries => {
+
+                entries.forEach(entry => {
+
+                    if (!entry.isIntersecting) return;
+
+                    const id = entry.target.id;
+
+                    links.forEach(link => {
+
+                        link.classList.toggle(
+                            "active",
+                            link.getAttribute("href") === `#${id}`
+                        );
+
+                    });
+
+                });
+
+            },
+            {
+                threshold: .25
+            }
+        );
+
+        sections.forEach(section => observer.observe(section));
     }
+
+
+    /* =====================================================
+       LANGUAGE
+    ===================================================== */
+
+    const TRANSLATIONS = {
+
+        en: {
+
+            "الرئيسية": "Home",
+            "كيف تعمل": "How It Works",
+            "الصحة النفسية": "Mental Health",
+            "المختصون": "Specialists",
+            "الأسئلة الشائعة": "FAQ",
+
+            "ابدأ الحجز": "Start Booking",
+            "استكشف المختصين": "Explore Specialists",
+            "استكشف الموضوعات": "Explore Topics",
+
+            "افهم ما تمر به": "Understand What You Experience",
+            "مختصون": "Specialists",
+            "كيف تعمل MindCare": "How MindCare Works",
+            "أسئلة شائعة": "Frequently Asked Questions",
+
+            "الدعم بدون أحكام": "Support Without Judgment",
+            "علاقتك بنفسك": "Your Relationship With Yourself",
+            "العلاقات": "Relationships",
+
+            "تقييم مبدئي": "Initial Assessment",
+            "الخصوصية أولًا": "Privacy First",
+            "خطوتك القادمة": "Your Next Step"
+        }
+    };
+
+
+    function changeLanguage() {
+
+        const current =
+            localStorage.getItem("mindcare_language") || "ar";
+
+        const next = current === "ar" ? "en" : "ar";
+
+        localStorage.setItem(
+            "mindcare_language",
+            next
+        );
+
+        applyLanguage(next);
+    }
+
+
+    function applyLanguage(language) {
+
+        const isEnglish = language === "en";
+
+        document.documentElement.lang =
+            isEnglish ? "en" : "ar";
+
+        document.documentElement.dir =
+            isEnglish ? "ltr" : "rtl";
+
+
+        const switcher = $("#languageSwitch");
+
+        if (switcher) {
+            switcher.textContent =
+                isEnglish ? "AR" : "EN";
+        }
+
+
+        if (!isEnglish) {
+
+            $$("[data-ar]").forEach(element => {
+
+                element.textContent =
+                    element.dataset.ar;
+
+            });
+
+            return;
+        }
+
+
+        $$("[data-en]").forEach(element => {
+
+            element.textContent =
+                element.dataset.en;
+
+        });
+
+
+        // Translate common static navigation elements
+        const englishMap = TRANSLATIONS.en;
+
+        $$("*").forEach(element => {
+
+            if (
+                element.children.length === 0 &&
+                element.textContent.trim() &&
+                englishMap[element.textContent.trim()]
+            ) {
+
+                element.textContent =
+                    englishMap[element.textContent.trim()];
+            }
+
+        });
+    }
+
 
     /* =====================================================
        FAQ
     ===================================================== */
 
-    function renderFAQ() {
-        const container = $("#faqList");
+    function initFAQ() {
 
-        if (!container) return;
+        $$(".faq-question").forEach(button => {
 
-        const faq =
-            state.faq.length
-                ? state.faq
-                : fallbackFAQ;
+            button.addEventListener("click", () => {
 
-        container.innerHTML = "";
+                const item =
+                    button.closest(".faq-item");
 
-        faq.forEach((item, index) => {
-            const question =
-                state.language === "ar"
-                    ? item.qAr
-                    : item.qEn;
+                if (!item) return;
 
-            const answer =
-                state.language === "ar"
-                    ? item.aAr
-                    : item.aEn;
+                const wasActive =
+                    item.classList.contains("active");
 
-            const faqItem =
-                document.createElement("div");
+                $$(".faq-item").forEach(other => {
 
-            faqItem.className =
-                "faq-item";
+                    other.classList.remove("active");
 
-            faqItem.innerHTML = `
-                <button
-                    type="button"
-                    class="faq-question"
-                    aria-expanded="false"
-                    aria-controls="faq-answer-${index}"
-                >
-                    <span>
-                        ${escapeHTML(question || "")}
-                    </span>
+                });
 
-                    <span
-                        class="faq-icon"
-                        aria-hidden="true"
-                    >
-                        +
-                    </span>
-                </button>
+                if (!wasActive) {
+                    item.classList.add("active");
+                }
 
-                <div
-                    id="faq-answer-${index}"
-                    class="faq-answer"
-                    hidden
-                >
-                    <p>
-                        ${escapeHTML(answer || "")}
-                    </p>
-                </div>
+            });
+
+        });
+    }
+
+
+    /* =====================================================
+       FIREBASE INITIALIZATION
+    ===================================================== */
+
+    async function initFirebase() {
+
+        try {
+
+            if (!FIREBASE_CONFIG?.projectId) {
+                console.warn(
+                    "MindCare: Firebase configuration is missing."
+                );
+
+                return false;
+            }
+
+
+            const appModule =
+                await import(
+                    "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"
+                );
+
+            const firestoreModule =
+                await import(
+                    "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"
+                );
+
+
+            const app =
+                appModule.getApps().length
+                    ? appModule.getApps()[0]
+                    : appModule.initializeApp(FIREBASE_CONFIG);
+
+
+            db = firestoreModule.getFirestore(app);
+
+            window.MINDCARE_DB = db;
+
+            window.MINDCARE_FIRESTORE =
+                firestoreModule;
+
+            firebaseReady = true;
+
+            return true;
+
+        } catch (error) {
+
+            console.error(
+                "MindCare Firebase initialization failed:",
+                error
+            );
+
+            firebaseReady = false;
+
+            return false;
+        }
+    }
+
+
+    /* =====================================================
+       BOOKING
+    ===================================================== */
+
+    const bookingState = {
+        selectedProvider: "",
+        loadingSlots: false
+    };
+
+
+    function resetBookingForm() {
+
+        const form = $("#bookingForm");
+
+        if (!form) return;
+
+        form.reset();
+
+        const slotSelect = $("#bookingSlot");
+
+        if (slotSelect) {
+
+            slotSelect.disabled = true;
+
+            slotSelect.innerHTML = `
+                <option value="">
+                    اختر المختص والتاريخ أولًا
+                </option>
+            `;
+        }
+
+        const status = $("#slotStatus");
+
+        if (status) {
+            status.textContent = "";
+        }
+
+        const success = $("#bookingSuccess");
+
+        if (success) {
+            success.classList.remove("show");
+            success.innerHTML = "";
+        }
+    }
+
+
+    function openBooking(provider = "") {
+
+        bookingState.selectedProvider =
+            provider || "";
+
+        const providerSelect =
+            $("#bookingProvider");
+
+        if (providerSelect) {
+
+            providerSelect.value =
+                provider || "";
+        }
+
+        const dateInput = $("#bookingDate");
+
+        if (dateInput) {
+
+            const today =
+                new Date().toISOString().split("T")[0];
+
+            dateInput.min = today;
+        }
+
+        openModal("bookingModal");
+
+        if (provider) {
+            loadAvailableSlots();
+        }
+    }
+
+
+    function setBookingMessage(message, type = "success") {
+
+        const box = $("#bookingSuccess");
+
+        if (!box) return;
+
+        box.classList.remove("show");
+
+        if (type === "error") {
+
+            box.className = "error-message";
+            box.textContent = message;
+
+        } else {
+
+            box.className = "success-message show";
+            box.textContent = message;
+        }
+    }
+
+
+    function formatSlotLabel(slot) {
+
+        const date = slot.date || "";
+        const time = slot.time || "";
+
+        if (!date && !time) {
+            return "موعد متاح";
+        }
+
+        return `${date} — ${time}`;
+    }
+
+
+    async function loadAvailableSlots() {
+
+        const providerSelect =
+            $("#bookingProvider");
+
+        const dateInput =
+            $("#bookingDate");
+
+        const slotSelect =
+            $("#bookingSlot");
+
+        const status =
+            $("#slotStatus");
+
+        if (
+            !providerSelect ||
+            !dateInput ||
+            !slotSelect
+        ) {
+            return;
+        }
+
+
+        const provider =
+            providerSelect.value.trim();
+
+        const date =
+            dateInput.value.trim();
+
+
+        slotSelect.innerHTML = `
+            <option value="">
+                جاري تحميل المواعيد...
+            </option>
+        `;
+
+        slotSelect.disabled = true;
+
+        if (status) {
+            status.textContent = "";
+        }
+
+
+        if (!provider || !date) {
+
+            slotSelect.innerHTML = `
+                <option value="">
+                    اختر المختص والتاريخ أولًا
+                </option>
             `;
 
-            container.appendChild(faqItem);
-        });
+            return;
+        }
 
-        $$(".faq-question", container)
-            .forEach(button => {
-                button.addEventListener(
-                    "click",
-                    () => {
-                        const expanded =
-                            button.getAttribute(
-                                "aria-expanded"
-                            ) === "true";
 
-                        const answer =
-                            document.getElementById(
-                                button.getAttribute(
-                                    "aria-controls"
-                                )
-                            );
+        if (!firebaseReady || !db) {
 
-                        button.setAttribute(
-                            "aria-expanded",
-                            String(!expanded)
-                        );
+            slotSelect.innerHTML = `
+                <option value="">
+                    نظام المواعيد غير متصل حاليًا
+                </option>
+            `;
 
-                        if (answer) {
-                            answer.hidden =
-                                expanded;
-                        }
+            if (status) {
+                status.textContent =
+                    "يرجى المحاولة مرة أخرى بعد قليل.";
+            }
 
-                        const icon =
-                            $(".faq-icon", button);
+            return;
+        }
 
-                        if (icon) {
-                            icon.textContent =
-                                expanded
-                                    ? "+"
-                                    : "−";
-                        }
-                    }
-                );
+
+        bookingState.loadingSlots = true;
+
+        try {
+
+            const snapshot =
+                await db
+                    .collection("slots")
+                    .where("provider", "==", provider)
+                    .where("date", "==", date)
+                    .where("booked", "==", false)
+                    .get();
+
+
+            const slots =
+                snapshot.docs
+                    .map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }))
+                    .sort((a, b) =>
+                        String(a.time || "")
+                            .localeCompare(String(b.time || ""))
+                    );
+
+
+            slotSelect.innerHTML = "";
+
+
+            if (!slots.length) {
+
+                slotSelect.innerHTML = `
+                    <option value="">
+                        لا توجد مواعيد متاحة لهذا اليوم
+                    </option>
+                `;
+
+                if (status) {
+                    status.textContent =
+                        "اختر تاريخًا آخر أو جرّب مختصًا آخر.";
+                }
+
+                return;
+            }
+
+
+            const defaultOption =
+                document.createElement("option");
+
+            defaultOption.value = "";
+            defaultOption.textContent =
+                "اختر الموعد";
+
+            slotSelect.appendChild(defaultOption);
+
+
+            slots.forEach(slot => {
+
+                const option =
+                    document.createElement("option");
+
+                option.value = slot.id;
+
+                option.textContent =
+                    formatSlotLabel(slot);
+
+                option.dataset.date =
+                    slot.date || "";
+
+                option.dataset.time =
+                    slot.time || "";
+
+                slotSelect.appendChild(option);
+
             });
+
+
+            slotSelect.disabled = false;
+
+            if (status) {
+                status.textContent =
+                    `${slots.length} موعد متاح`;
+            }
+
+        } catch (error) {
+
+            console.error(
+                "MindCare: Could not load slots.",
+                error
+            );
+
+            slotSelect.innerHTML = `
+                <option value="">
+                    تعذر تحميل المواعيد
+                </option>
+            `;
+
+            if (status) {
+                status.textContent =
+                    "حدث خطأ أثناء تحميل المواعيد.";
+            }
+
+        } finally {
+
+            bookingState.loadingSlots = false;
+        }
     }
+
+
+    async function submitBooking(event) {
+
+        event.preventDefault();
+
+        const form =
+            event.currentTarget;
+
+        const submitButton =
+            $("#bookingSubmit");
+
+        const name =
+            $("#bookingName")?.value.trim();
+
+        const phone =
+            $("#bookingPhone")?.value.trim();
+
+        const provider =
+            $("#bookingProvider")?.value.trim();
+
+        const date =
+            $("#bookingDate")?.value.trim();
+
+        const slotId =
+            $("#bookingSlot")?.value.trim();
+
+        const message =
+            $("#bookingMessage")?.value.trim();
+
+
+        if (!name || !phone || !provider || !date || !slotId) {
+
+            setBookingMessage(
+                "من فضلك أكمل البيانات المطلوبة واختر موعدًا متاحًا.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (!firebaseReady || !db) {
+
+            setBookingMessage(
+                "نظام الحجز غير متصل حاليًا. حاول مرة أخرى بعد قليل.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (submitButton) {
+
+            submitButton.disabled = true;
+
+            submitButton.innerHTML = `
+                جاري تأكيد الحجز...
+            `;
+        }
+
+
+        try {
+
+            const {
+                doc,
+                runTransaction,
+                serverTimestamp
+            } = window.MINDCARE_FIRESTORE;
+
+
+            const slotRef =
+                doc(db, "slots", slotId);
+
+            const bookingRef =
+                doc(
+                    window.MINDCARE_FIRESTORE
+                        .getFirestore(db),
+                    "bookings",
+                    crypto.randomUUID()
+                );
+
+
+            /*
+                Transaction:
+                1. Check slot.
+                2. Make sure it is still available.
+                3. Create booking.
+                4. Mark slot as booked.
+            */
+
+            await runTransaction(
+                db,
+                async transaction => {
+
+                    const slotSnapshot =
+                        await transaction.get(slotRef);
+
+                    if (!slotSnapshot.exists()) {
+
+                        throw new Error(
+                            "SLOT_NOT_FOUND"
+                        );
+                    }
+
+
+                    const slotData =
+                        slotSnapshot.data();
+
+
+                    if (slotData.booked === true) {
+
+                        throw new Error(
+                            "SLOT_ALREADY_BOOKED"
+                        );
+                    }
+
+
+                    if (
+                        slotData.provider !== provider ||
+                        slotData.date !== date
+                    ) {
+
+                        throw new Error(
+                            "SLOT_CHANGED"
+                        );
+                    }
+
+
+                    transaction.set(
+                        bookingRef,
+                        {
+                            name,
+                            phone,
+                            message,
+
+                            providerId:
+                                slotData.providerId || "",
+
+                            provider,
+
+                            slotId,
+
+                            date:
+                                slotData.date,
+
+                            time:
+                                slotData.time || "",
+
+                            status: "pending",
+
+                            createdAt:
+                                serverTimestamp(),
+
+                            updatedAt:
+                                serverTimestamp()
+                        }
+                    );
+
+
+                    transaction.update(
+                        slotRef,
+                        {
+                            booked: true,
+
+                            bookingId:
+                                bookingRef.id,
+
+                            updatedAt:
+                                serverTimestamp()
+                        }
+                    );
+
+                }
+            );
+
+
+            form.reset();
+
+            const slotSelect =
+                $("#bookingSlot");
+
+            if (slotSelect) {
+
+                slotSelect.disabled = true;
+
+                slotSelect.innerHTML = `
+                    <option value="">
+                        تم حجز الموعد
+                    </option>
+                `;
+            }
+
+
+            setBookingMessage(
+                "تم إرسال طلب الحجز بنجاح. سيتم التعامل مع الطلب من خلال إدارة MindCare.",
+                "success"
+            );
+
+
+            if (submitButton) {
+
+                submitButton.innerHTML = `
+                    تم إرسال الحجز
+                    <i class="fa-solid fa-check"></i>
+                `;
+            }
+
+
+        } catch (error) {
+
+            console.error(
+                "MindCare booking error:",
+                error
+            );
+
+
+            let message =
+                "تعذر إتمام الحجز حاليًا. حاول مرة أخرى.";
+
+
+            if (error.message === "SLOT_ALREADY_BOOKED") {
+
+                message =
+                    "هذا الموعد تم حجزه للتو. اختر موعدًا آخر.";
+
+            } else if (error.message === "SLOT_NOT_FOUND") {
+
+                message =
+                    "الموعد لم يعد موجودًا. اختر موعدًا آخر.";
+
+            } else if (error.message === "SLOT_CHANGED") {
+
+                message =
+                    "تغيرت بيانات الموعد. يرجى اختيار موعد جديد.";
+            }
+
+
+            setBookingMessage(
+                message,
+                "error"
+            );
+
+        } finally {
+
+            if (submitButton) {
+
+                submitButton.disabled = false;
+
+                submitButton.innerHTML = `
+                    إرسال طلب الحجز
+                    <i class="fa-solid fa-arrow-left"></i>
+                `;
+            }
+        }
+    }
+
 
     /* =====================================================
        ASSESSMENT
     ===================================================== */
 
-    const assessmentQuestions = {
-        ar: [
-            {
-                question:
-                    "خلال الفترة الأخيرة، كيف تصف مستوى التوتر لديك؟",
-                options: [
-                    "منخفض",
-                    "متوسط",
-                    "مرتفع",
-                    "مرتفع جدًا"
-                ]
-            },
-            {
-                question:
-                    "هل يؤثر التفكير الزائد على يومك؟",
-                options: [
-                    "نادراً",
-                    "أحيانًا",
-                    "غالبًا",
-                    "بشكل واضح"
-                ]
-            },
-            {
-                question:
-                    "كيف تشعر تجاه علاقاتك مع الآخرين؟",
-                options: [
-                    "مستقرة",
-                    "بها بعض التحديات",
-                    "تسبب لي ضغطًا",
-                    "أشعر بصعوبة كبيرة"
-                ]
-            },
-            {
-                question:
-                    "كيف ترى علاقتك بنفسك؟",
-                options: [
-                    "إيجابية",
-                    "مقبولة",
-                    "أحتاج إلى تحسينها",
-                    "أواجه صعوبة واضحة"
-                ]
-            }
-        ],
+    const ASSESSMENT_QUESTIONS = [
 
-        en: [
-            {
-                question:
-                    "How would you describe your stress level recently?",
-                options: [
-                    "Low",
-                    "Moderate",
-                    "High",
-                    "Very high"
-                ]
-            },
-            {
-                question:
-                    "Does overthinking affect your daily life?",
-                options: [
-                    "Rarely",
-                    "Sometimes",
-                    "Often",
-                    "Significantly"
-                ]
-            },
-            {
-                question:
-                    "How do you feel about your relationships?",
-                options: [
-                    "Stable",
-                    "Some challenges",
-                    "They cause me stress",
-                    "I find them very difficult"
-                ]
-            },
-            {
-                question:
-                    "How would you describe your relationship with yourself?",
-                options: [
-                    "Positive",
-                    "Acceptable",
-                    "I want to improve it",
-                    "I struggle with it"
-                ]
-            }
-        ]
-    };
+        "خلال الفترة الأخيرة، كم مرة شعرت بالتوتر أو القلق؟",
 
-    function startAssessment() {
-        state.assessmentStep = 0;
-        state.assessmentAnswers = [];
+        "كم مرة فقدت الاهتمام بأشياء كنت تستمتع بها؟",
 
-        renderAssessmentQuestion();
+        "كم مرة واجهت صعوبة في النوم أو شعرت بالإرهاق؟",
 
-        if (modalOverlay) {
-            modalOverlay.classList.add("active");
-            modalOverlay.setAttribute(
-                "aria-hidden",
-                "false"
-            );
+        "كم مرة وجدت صعوبة في التركيز أو إنجاز مهامك؟",
 
-            document.body.classList.add(
-                "modal-open"
-            );
+        "كم مرة شعرت أن مشاعرك أصبحت تؤثر على حياتك اليومية؟"
+
+    ];
+
+
+    const ASSESSMENT_OPTIONS = [
+        {
+            value: 0,
+            label: "أبدًا"
+        },
+        {
+            value: 1,
+            label: "أحيانًا"
+        },
+        {
+            value: 2,
+            label: "كثيرًا"
+        },
+        {
+            value: 3,
+            label: "تقريبًا دائمًا"
         }
+    ];
+
+
+    function renderAssessment() {
+
+        const container =
+            $("#assessmentQuestions");
+
+        if (!container) return;
+
+
+        container.innerHTML =
+            ASSESSMENT_QUESTIONS
+                .map((question, index) => `
+
+                    <div class="assessment-question">
+
+                        <h3>
+                            ${index + 1}.
+                            ${escapeHTML(question)}
+                        </h3>
+
+                        <div class="assessment-options">
+
+                            ${ASSESSMENT_OPTIONS.map(option => `
+
+                                <div class="assessment-option">
+
+                                    <input
+                                        type="radio"
+                                        id="assessment-${index}-${option.value}"
+                                        name="assessment-${index}"
+                                        value="${option.value}">
+
+                                    <label
+                                        for="assessment-${index}-${option.value}">
+
+                                        ${escapeHTML(option.label)}
+
+                                    </label>
+
+                                </div>
+
+                            `).join("")}
+
+                        </div>
+
+                    </div>
+
+                `)
+                .join("");
     }
 
-    function renderAssessmentQuestion() {
-        const questions =
-            assessmentQuestions[state.language];
 
-        const current =
-            questions[state.assessmentStep];
+    function calculateAssessment() {
 
-        if (!current) {
-            showAssessmentResult();
+        let total = 0;
+
+        let answered = 0;
+
+
+        ASSESSMENT_QUESTIONS.forEach(
+            (_, index) => {
+
+                const selected =
+                    document.querySelector(
+                        `input[name="assessment-${index}"]:checked`
+                    );
+
+                if (selected) {
+
+                    answered++;
+
+                    total += Number(
+                        selected.value
+                    );
+                }
+            }
+        );
+
+
+        const result =
+            $("#assessmentResult");
+
+        if (!result) return;
+
+
+        if (answered < ASSESSMENT_QUESTIONS.length) {
+
+            result.innerHTML = `
+                <div class="error-message">
+                    من فضلك أجب عن جميع الأسئلة أولًا.
+                </div>
+            `;
+
             return;
         }
 
-        const total = questions.length;
 
-        const questionNumber =
-            state.assessmentStep + 1;
+        let message;
 
-        openModal(`
-            <div class="assessment-modal">
 
-                <div class="assessment-progress">
-                    ${
-                        state.language === "ar"
-                            ? `السؤال ${questionNumber} من ${total}`
-                            : `Question ${questionNumber} of ${total}`
-                    }
-                </div>
+        if (total <= 4) {
 
-                <h2>
-                    ${escapeHTML(current.question)}
-                </h2>
+            message =
+                "الإجابات تشير إلى مستوى منخفض من الأعراض في هذا التقييم القصير. إذا كان هناك شيء محدد يزعجك، يمكنك التحدث عنه مع شخص تثق به أو مختص.";
 
-                <div class="assessment-options">
-                    ${current.options
-                        .map(
-                            (option, index) => `
-                                <button
-                                    type="button"
-                                    class="assessment-option"
-                                    data-answer="${index + 1}"
-                                >
-                                    ${escapeHTML(option)}
-                                </button>
-                            `
-                        )
-                        .join("")}
-                </div>
+        } else if (total <= 9) {
 
-            </div>
-        `);
+            message =
+                "توجد بعض الأعراض التي قد تستحق الانتباه إليها، خصوصًا إذا كانت مستمرة أو تؤثر على حياتك اليومية.";
 
-        $$(".assessment-option")
-            .forEach(button => {
-                button.addEventListener(
-                    "click",
-                    () => {
-                        state.assessmentAnswers.push(
-                            Number(
-                                button.dataset.answer
-                            )
-                        );
-
-                        state.assessmentStep++;
-
-                        renderAssessmentQuestion();
-                    }
-                );
-            });
-    }
-
-    function showAssessmentResult() {
-        const score =
-            state.assessmentAnswers.reduce(
-                (sum, value) =>
-                    sum + value,
-                0
-            );
-
-        const average =
-            score /
-            state.assessmentAnswers.length;
-
-        let level;
-
-        if (average <= 1.5) {
-            level =
-                state.language === "ar"
-                    ? "يبدو أن مستوى التحديات التي أشرت إليها منخفض نسبيًا."
-                    : "Your responses suggest a relatively low level of difficulty.";
-        } else if (average <= 2.5) {
-            level =
-                state.language === "ar"
-                    ? "تشير إجاباتك إلى وجود بعض التحديات التي قد يكون من المفيد فهمها بشكل أعمق."
-                    : "Your responses suggest some challenges that may be worth exploring further.";
-        } else if (average <= 3.5) {
-            level =
-                state.language === "ar"
-                    ? "تشير إجاباتك إلى وجود ضغوط أو تحديات ملحوظة."
-                    : "Your responses suggest noticeable stress or challenges.";
         } else {
-            level =
-                state.language === "ar"
-                    ? "تشير إجاباتك إلى وجود تحديات واضحة قد تستفيد من دعم متخصص."
-                    : "Your responses suggest significant challenges that may benefit from professional support.";
+
+            message =
+                "الإجابات تشير إلى وجود أعراض تستحق مناقشتها مع مختص مؤهل، خاصة إذا كانت مستمرة أو تؤثر بشكل واضح على حياتك اليومية.";
+
         }
 
-        const title =
-            state.language === "ar"
-                ? "نتيجة التقييم المبدئي"
-                : "Initial Assessment Result";
 
-        const note =
-            state.language === "ar"
-                ? "هذا التقييم مبدئي ولا يُعد تشخيصًا طبيًا أو نفسيًا."
-                : "This assessment is only an initial screening and is not a medical or psychological diagnosis.";
+        result.innerHTML = `
 
-        const booking =
-            state.language === "ar"
-                ? "حجز جلسة"
-                : "Book a session";
+            <div class="assessment-result-box">
 
-        openModal(`
-            <div class="assessment-result">
+                <strong>
+                    النتيجة التثقيفية
+                </strong>
 
-                <h2>
-                    ${title}
-                </h2>
+                <span>
+                    ${escapeHTML(message)}
+                </span>
 
-                <p>
-                    ${escapeHTML(level)}
+                <p style="margin-top:10px;font-size:10px;">
+                    هذا التقييم ليس تشخيصًا طبيًا ولا يحدد وجود أو عدم وجود اضطراب نفسي.
                 </p>
 
-                <small>
-                    ${escapeHTML(note)}
-                </small>
-
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    data-assessment-booking
-                >
-                    ${booking}
-                </button>
-
             </div>
-        `);
 
-        const button =
-            $("[data-assessment-booking]");
-
-        if (button) {
-            button.addEventListener(
-                "click",
-                goToBooking
-            );
-        }
+        `;
     }
 
-    $$('[data-action="assessment"]')
-        .forEach(button => {
-            button.addEventListener(
-                "click",
-                event => {
+
+    /* =====================================================
+       EVENT DELEGATION
+    ===================================================== */
+
+    function initGlobalEvents() {
+
+        document.addEventListener("click", event => {
+
+            const bookingButton =
+                event.target.closest("[data-open-booking]");
+
+            if (bookingButton) {
+
+                const provider =
+                    bookingButton.dataset.selectedProvider || "";
+
+                openBooking(provider);
+
+                return;
+            }
+
+
+            const topicButton =
+                event.target.closest("[data-topic]");
+
+            if (topicButton) {
+
+                const topic =
+                    topicButton.dataset.topic;
+
+                openTopic(topic);
+
+                return;
+            }
+
+
+            const providerButton =
+                event.target.closest("[data-provider]");
+
+            if (providerButton) {
+
+                openProvider(
+                    providerButton.dataset.provider
+                );
+
+                return;
+            }
+
+
+            const modalProviderButton =
+                event.target.closest(
+                    "[data-modal-book-provider]"
+                );
+
+            if (modalProviderButton) {
+
+                const provider =
+                    modalProviderButton.dataset
+                        .modalBookProvider;
+
+                closeAllModals();
+
+                setTimeout(
+                    () => openBooking(provider),
+                    120
+                );
+
+                return;
+            }
+
+
+            const closeButton =
+                event.target.closest("[data-close-modal]");
+
+            if (closeButton) {
+
+                const modal =
+                    closeButton.closest(".modal");
+
+                closeModal(modal);
+
+                return;
+            }
+
+
+            const scrollLink =
+                event.target.closest(
+                    'a[href^="#"]'
+                );
+
+            if (
+                scrollLink &&
+                scrollLink.getAttribute("href") !== "#"
+            ) {
+
+                const targetId =
+                    scrollLink.getAttribute("href");
+
+                const target =
+                    document.querySelector(targetId);
+
+                if (target) {
+
                     event.preventDefault();
-                    startAssessment();
+
+                    target.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
                 }
-            );
+            }
+
         });
 
-    /* =====================================================
-       DYNAMIC CONTENT
-    ===================================================== */
 
-    function renderDynamicContent() {
-        renderTopics();
-        renderProviders();
-        renderFAQ();
+        document.addEventListener("keydown", event => {
+
+            if (event.key === "Escape") {
+                closeAllModals();
+            }
+
+        });
     }
 
+
     /* =====================================================
-       FIREBASE
-       Optional public read
+       BOOKING EVENTS
     ===================================================== */
 
-    async function loadFirebaseData() {
-        try {
-            if (
-                !window.MINDCARE_FIREBASE_CONFIG
-            ) {
-                return;
-            }
+    function initBookingEvents() {
 
-            const config =
-                window.MINDCARE_FIREBASE_CONFIG;
+        const form =
+            $("#bookingForm");
 
-            if (!config.projectId) {
-                return;
-            }
+        if (form) {
 
-            const {
-                initializeApp
-            } = await import(
-                "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js"
+            form.addEventListener(
+                "submit",
+                submitBooking
             );
+        }
 
-            const {
-                getFirestore,
-                collection,
-                getDocs,
-                query,
-                where
-            } = await import(
-                "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js"
+
+        const provider =
+            $("#bookingProvider");
+
+        const date =
+            $("#bookingDate");
+
+
+        provider?.addEventListener(
+            "change",
+            loadAvailableSlots
+        );
+
+
+        date?.addEventListener(
+            "change",
+            loadAvailableSlots
+        );
+    }
+
+
+    /* =====================================================
+       ASSESSMENT EVENTS
+    ===================================================== */
+
+    function initAssessment() {
+
+        const openButton =
+            $("#assessmentButton");
+
+        if (openButton) {
+
+            openButton.addEventListener(
+                "click",
+                () => {
+
+                    renderAssessment();
+
+                    const result =
+                        $("#assessmentResult");
+
+                    if (result) {
+                        result.innerHTML = "";
+                    }
+
+                    openModal("assessmentModal");
+                }
             );
+        }
 
-            const app =
-                initializeApp(config);
 
-            const db =
-                getFirestore(app);
+        const calculateButton =
+            $("#calculateAssessment");
 
-            /* -------------------------------
-               Providers
-            ------------------------------- */
+        if (calculateButton) {
 
-            try {
-                const providerQuery =
-                    query(
-                        collection(
-                            db,
-                            "providers"
-                        ),
-                        where(
-                            "active",
-                            "==",
-                            true
-                        )
-                    );
-
-                const snapshot =
-                    await getDocs(
-                        providerQuery
-                    );
-
-                const providers =
-                    snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-
-                if (providers.length) {
-                    state.providers =
-                        providers;
-                }
-            } catch (error) {
-                console.warn(
-                    "MindCare providers unavailable:",
-                    error
-                );
-            }
-
-            /* -------------------------------
-               Topics
-            ------------------------------- */
-
-            try {
-                const topicQuery =
-                    query(
-                        collection(
-                            db,
-                            "topics"
-                        ),
-                        where(
-                            "active",
-                            "==",
-                            true
-                        )
-                    );
-
-                const snapshot =
-                    await getDocs(
-                        topicQuery
-                    );
-
-                const topics =
-                    snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-
-                if (topics.length) {
-                    state.topics =
-                        topics;
-                }
-            } catch (error) {
-                console.warn(
-                    "MindCare topics unavailable:",
-                    error
-                );
-            }
-
-            renderDynamicContent();
-
-        } catch (error) {
-            console.warn(
-                "MindCare Firebase public loading skipped:",
-                error
+            calculateButton.addEventListener(
+                "click",
+                calculateAssessment
             );
         }
     }
 
-    /* =====================================================
-       SECURITY / HTML ESCAPING
-    ===================================================== */
-
-    function escapeHTML(value) {
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
-    }
-
-    /* =====================================================
-       ACCESSIBILITY
-    ===================================================== */
-
-    if (modalOverlay) {
-        modalOverlay.setAttribute(
-            "aria-hidden",
-            "true"
-        );
-    }
-
-    if (menuToggle) {
-        menuToggle.setAttribute(
-            "aria-expanded",
-            "false"
-        );
-    }
 
     /* =====================================================
        INITIALIZATION
     ===================================================== */
 
-    applyLanguage(state.language);
+    async function init() {
 
-    loadFirebaseData();
+        initMobileMenu();
 
-});
+        initNavigation();
+
+        initFAQ();
+
+        initGlobalEvents();
+
+        initBookingEvents();
+
+        initAssessment();
+
+
+        const language =
+            localStorage.getItem("mindcare_language") || "ar";
+
+        applyLanguage(language);
+
+
+        const firebase =
+            await initFirebase();
+
+
+        if (firebase) {
+
+            console.log(
+                "MindCare: Firebase connected successfully."
+            );
+
+        } else {
+
+            console.warn(
+                "MindCare: Running without Firebase connection."
+            );
+        }
+    }
+
+
+    /* =====================================================
+       START
+    ===================================================== */
+
+    if (document.readyState === "loading") {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            init
+        );
+
+    } else {
+
+        init();
+
+    }
+
+})();
