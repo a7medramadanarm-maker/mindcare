@@ -2,1021 +2,518 @@
 <html lang="ar" dir="rtl">
 
 <head>
-
     <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
+    <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="robots"
-        content="noindex,nofollow">
+    <meta name="theme-color"
+        content="#6f897b">
 
-    <title>
-        MindCare | لوحة التحكم
-    </title>
+    <meta name="description"
+        content="MindCare Admin Dashboard">
 
+    <title>MindCare | لوحة الإدارة</title>
 
-    <!-- Google Font -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
-
-
-    <!-- Font Awesome -->
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-
-
-    <!-- Main Website CSS -->
-    <link
-        rel="stylesheet"
+    <link rel="stylesheet"
         href="style.css">
 
-
     <style>
-
         /* =====================================================
-           ADMIN PAGE
+           ADMIN DASHBOARD
         ===================================================== */
-
-        [hidden] {
-            display: none !important;
-        }
-
 
         body {
-            background: var(--cream);
+            background: var(--cream, #f8f6f1);
         }
 
-
-        .admin-wrap {
-            width: min(
-                1250px,
-                calc(100% - 28px)
-            );
-
-            margin: 30px auto 60px;
+        .admin-wrapper {
+            min-height: 100vh;
         }
-
-
-        /* =====================================================
-           LOGIN
-        ===================================================== */
-
-        .admin-login {
-            max-width: 430px;
-            margin: 80px auto;
-        }
-
-
-        .admin-login-icon {
-            width: 70px;
-            height: 70px;
-
-            margin: 0 auto 18px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            border-radius: 50%;
-
-            background:
-                var(--green-soft);
-
-            color:
-                var(--green-dark);
-
-            font-size: 28px;
-        }
-
-
-        .admin-login h1 {
-            text-align: center;
-            margin-bottom: 8px;
-        }
-
-
-        .admin-login p {
-            text-align: center;
-            color: var(--muted);
-            margin-bottom: 24px;
-        }
-
-
-        /* =====================================================
-           CARD
-        ===================================================== */
-
-        .admin-card {
-            background: var(--white);
-
-            border:
-                1px solid var(--border);
-
-            border-radius:
-                var(--radius);
-
-            padding: 22px;
-
-            margin-bottom: 18px;
-
-            box-shadow:
-                var(--shadow);
-        }
-
-
-        /* =====================================================
-           HEADER
-        ===================================================== */
 
         .admin-header {
-
+            background: var(--white, #fff);
+            border-bottom: 1px solid var(--border, #e3e8e5);
+            padding: 18px 5%;
             display: flex;
-
-            justify-content:
-                space-between;
-
-            align-items:
-                center;
-
-            gap: 15px;
-
-            flex-wrap: wrap;
-
-            margin-bottom: 20px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
+        .admin-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
 
         .admin-brand h1 {
             margin: 0;
-            font-size: 26px;
+            font-size: 1.35rem;
+            color: var(--green-dark, #4f685d);
         }
-
 
         .admin-brand span {
-            color:
-                var(--muted);
-
-            font-size: 13px;
+            color: var(--muted, #718079);
+            font-size: .85rem;
         }
 
-
-        .admin-actions {
-
+        .admin-header-actions {
             display: flex;
-
-            align-items:
-                center;
-
-            gap: 8px;
-
+            align-items: center;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
+        .admin-container {
+            width: min(1400px, 92%);
+            margin: 30px auto 60px;
+        }
 
-        /* =====================================================
-           STATS
-        ===================================================== */
+        /* LOGIN */
 
-        .admin-stats {
+        .admin-login {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 25px;
+        }
 
+        .login-card {
+            width: min(440px, 100%);
+            background: var(--white, #fff);
+            border: 1px solid var(--border, #e3e8e5);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, .06);
+        }
+
+        .login-card h1 {
+            margin: 0 0 8px;
+            color: var(--green-dark, #4f685d);
+        }
+
+        .login-card p {
+            color: var(--muted, #718079);
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid var(--border, #e3e8e5);
+            border-radius: 10px;
+            background: #fff;
+            font-family: inherit;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--green, #6f897b);
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 18px;
+            background: var(--green, #6f897b);
+            color: #fff;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            transition: .2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            opacity: .92;
+        }
+
+        .btn.small {
+            padding: 7px 11px;
+            font-size: .82rem;
+        }
+
+        .btn.danger {
+            background: #b85c5c;
+        }
+
+        .btn.secondary {
+            background: #718079;
+        }
+
+        .err {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 9px;
+            background: #fbeaea;
+            color: #a43f3f;
+            font-size: .9rem;
+        }
+
+        .msg {
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 9px;
+            background: #e9f0ec;
+            color: #4f685d;
+        }
+
+        .msg.error {
+            background: #fbeaea;
+            color: #a43f3f;
+        }
+
+        /* STATS */
+
+        .stats-grid {
             display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 25px;
+        }
 
-            grid-template-columns:
-                repeat(
-                    4,
-                    minmax(0, 1fr)
-                );
+        .stat-card {
+            background: var(--white, #fff);
+            border: 1px solid var(--border, #e3e8e5);
+            border-radius: 16px;
+            padding: 20px;
+        }
 
-            gap: 12px;
+        .stat-card span {
+            display: block;
+            color: var(--muted, #718079);
+            font-size: .9rem;
+            margin-bottom: 7px;
+        }
 
+        .stat-card strong {
+            display: block;
+            font-size: 1.8rem;
+            color: var(--green-dark, #4f685d);
+        }
+
+        /* TABS */
+
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 8px;
             margin-bottom: 20px;
         }
 
-
-        .admin-stat {
-
-            background:
-                var(--green-soft);
-
-            border-radius:
-                16px;
-
-            padding: 18px;
-
-            text-align: center;
-        }
-
-
-        .admin-stat i {
-
-            font-size: 20px;
-
-            color:
-                var(--green-dark);
-
-            margin-bottom: 8px;
-        }
-
-
-        .admin-stat strong {
-
-            display: block;
-
-            font-size: 26px;
-
-            color:
-                var(--green-dark);
-        }
-
-
-        .admin-stat span {
-
-            color:
-                var(--muted);
-
-            font-size: 13px;
-        }
-
-
-        /* =====================================================
-           TABS
-        ===================================================== */
-
-        .admin-tabs {
-
-            display: flex;
-
-            gap: 8px;
-
-            flex-wrap: wrap;
-
-            margin-bottom: 18px;
-        }
-
-
         .admin-tabs button {
-
-            border: 0;
-
+            border: 1px solid var(--border, #e3e8e5);
+            background: var(--white, #fff);
+            color: var(--text, #26312d);
+            padding: 10px 18px;
+            border-radius: 10px;
             cursor: pointer;
-
             font-family: inherit;
+            white-space: nowrap;
         }
 
+        .admin-tabs button.active {
+            background: var(--green, #6f897b);
+            color: #fff;
+            border-color: var(--green, #6f897b);
+        }
 
-        /* =====================================================
-           SECTION HEAD
-        ===================================================== */
+        /* PANELS */
 
-        .admin-section-head {
+        .admin-panel {
+            display: none;
+        }
 
+        .admin-panel.active {
+            display: block;
+        }
+
+        .panel-card {
+            background: var(--white, #fff);
+            border: 1px solid var(--border, #e3e8e5);
+            border-radius: 18px;
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+
+        .panel-card h2 {
+            margin-top: 0;
+            color: var(--green-dark, #4f685d);
+        }
+
+        /* TABLE */
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+
+        th,
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border, #e3e8e5);
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        th {
+            color: var(--green-dark, #4f685d);
+            font-size: .9rem;
+            background: #fafcfb;
+        }
+
+        td {
+            color: var(--text, #26312d);
+            font-size: .9rem;
+        }
+
+        .actions {
             display: flex;
-
-            align-items:
-                center;
-
-            justify-content:
-                space-between;
-
-            gap: 10px;
-
+            gap: 6px;
             flex-wrap: wrap;
-
-            margin-bottom: 18px;
         }
 
-
-        .admin-section-head h2 {
-
-            margin: 0;
-
-            font-size: 20px;
+        .status {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: .78rem;
+            font-weight: 600;
         }
 
-
-        .admin-note {
-
-            color:
-                var(--muted);
-
-            font-size: 13px;
-
-            line-height: 1.8;
+        .status-pending {
+            background: #f4ecd9;
+            color: #876c31;
         }
 
+        .status-confirmed {
+            background: #e3f1e9;
+            color: #47705a;
+        }
 
-        /* =====================================================
-           FORMS
-        ===================================================== */
+        .status-cancelled {
+            background: #f8e4e4;
+            color: #9c4a4a;
+        }
+
+        /* FORMS */
 
         .admin-form-grid {
-
             display: grid;
-
-            grid-template-columns:
-                repeat(
-                    2,
-                    minmax(0, 1fr)
-                );
-
-            gap: 14px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
         }
 
-
-        .admin-form-full {
-            grid-column:
-                1 / -1;
+        .full-width {
+            grid-column: 1 / -1;
         }
 
+        /* ITEMS */
 
-        .admin-field {
-            margin-bottom: 4px;
-        }
-
-
-        .admin-field label {
-
-            display: block;
-
-            margin-bottom: 7px;
-
-            font-size: 13px;
-
-            font-weight: 700;
-        }
-
-
-        .admin-field input,
-        .admin-field textarea,
-        .admin-field select {
-
-            width: 100%;
-
-            box-sizing:
-                border-box;
-
-            padding: 12px 13px;
-
-            border:
-                1px solid
-                var(--border);
-
-            border-radius:
-                11px;
-
-            background:
-                #fff;
-
-            color:
-                var(--text);
-
-            font-family:
-                inherit;
-
-            font-size: 13px;
-
-            outline: none;
-
-            transition:
-                border-color .2s,
-                box-shadow .2s;
-        }
-
-
-        .admin-field textarea {
-
-            min-height:
-                100px;
-
-            resize:
-                vertical;
-        }
-
-
-        .admin-field input:focus,
-        .admin-field textarea:focus,
-        .admin-field select:focus {
-
-            border-color:
-                var(--green);
-
-            box-shadow:
-                0 0 0 3px
-                var(--green-soft);
-        }
-
-
-        .admin-form-actions {
-
+        .admin-item {
             display: flex;
-
-            gap: 8px;
-
-            flex-wrap: wrap;
-
-            margin-top: 14px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border, #e3e8e5);
         }
 
-
-        /* =====================================================
-           MESSAGE
-        ===================================================== */
-
-        .success {
-
-            color:
-                #35694b;
-
-            background:
-                #e8f4ed;
-
-            border-radius:
-                10px;
-
-            padding:
-                9px 12px;
-
-            margin-top: 10px;
-
-            font-size: 13px;
-        }
-
-
-        .err {
-
-            color:
-                #a04040;
-
-            background:
-                #f8e9e9;
-
-            border-radius:
-                10px;
-
-            padding:
-                9px 12px;
-
-            margin-top: 10px;
-
-            font-size: 13px;
-        }
-
-
-        /* =====================================================
-           TABLE
-        ===================================================== */
-
-        .admin-table-wrap {
-
-            overflow-x:
-                auto;
-
-            border:
-                1px solid
-                var(--border);
-
-            border-radius:
-                14px;
-        }
-
-
-        .admin-table {
-
-            width: 100%;
-
-            border-collapse:
-                collapse;
-
-            font-size:
-                13px;
-
-            min-width:
-                850px;
-        }
-
-
-        .admin-table th,
-        .admin-table td {
-
-            padding:
-                12px;
-
-            border-bottom:
-                1px solid
-                var(--border);
-
-            text-align:
-                right;
-
-            vertical-align:
-                middle;
-        }
-
-
-        .admin-table th {
-
-            background:
-                var(--green-soft);
-
-            color:
-                var(--green-dark);
-
-            font-weight:
-                700;
-        }
-
-
-        .admin-table tr:last-child td {
+        .admin-item:last-child {
             border-bottom: 0;
         }
 
-
-        /* =====================================================
-           BADGES
-        ===================================================== */
-
-        .admin-badge {
-
-            display:
-                inline-flex;
-
-            align-items:
-                center;
-
-            gap: 5px;
-
-            padding:
-                4px 10px;
-
-            border-radius:
-                999px;
-
-            background:
-                var(--green-soft);
-
-            font-size:
-                11px;
-
-            font-weight:
-                700;
+        .admin-item strong {
+            display: block;
+            margin-bottom: 4px;
         }
 
-
-        .admin-badge.pending {
-            background:
-                #f5f0e4;
+        .admin-item small {
+            color: var(--muted, #718079);
         }
 
+        /* NOTIFICATION */
 
-        .admin-badge.confirmed {
-            background:
-                #dcefe3;
+        .notification {
+            position: fixed;
+            left: 25px;
+            bottom: 25px;
+            width: min(360px, calc(100% - 50px));
+            background: #fff;
+            border: 1px solid var(--border, #e3e8e5);
+            border-radius: 15px;
+            padding: 16px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, .12);
+            z-index: 9999;
+            display: none;
         }
 
-
-        .admin-badge.cancelled {
-            background:
-                #f3dede;
+        .notification strong {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--green-dark, #4f685d);
         }
 
-
-        /* =====================================================
-           ITEMS
-        ===================================================== */
-
-        .admin-list {
-
-            display:
-                grid;
-
-            gap:
-                12px;
+        .notification p {
+            margin: 0;
+            color: var(--muted, #718079);
+            font-size: .9rem;
         }
 
+        /* FOOTER */
 
-        .admin-item {
-
-            border:
-                1px solid
-                var(--border);
-
-            border-radius:
-                15px;
-
-            padding:
-                16px;
-
-            background:
-                #fff;
+        .admin-footer {
+            text-align: center;
+            color: var(--muted, #718079);
+            padding: 25px;
+            font-size: .85rem;
         }
 
+        /* RESPONSIVE */
 
-        .admin-item-head {
+        @media (max-width: 900px) {
 
-            display:
-                flex;
-
-            justify-content:
-                space-between;
-
-            align-items:
-                flex-start;
-
-            gap:
-                12px;
-
-            flex-wrap:
-                wrap;
-        }
-
-
-        .admin-item-title {
-
-            font-weight:
-                700;
-
-            font-size:
-                16px;
-
-            color:
-                var(--text);
-        }
-
-
-        .admin-item-sub {
-
-            margin-top:
-                4px;
-
-            color:
-                var(--muted);
-
-            font-size:
-                12px;
-        }
-
-
-        .admin-item-description {
-
-            color:
-                var(--muted);
-
-            font-size:
-                13px;
-
-            line-height:
-                1.8;
-
-            margin:
-                12px 0;
-        }
-
-
-        .admin-item-actions {
-
-            display:
-                flex;
-
-            gap:
-                7px;
-
-            flex-wrap:
-                wrap;
-
-            margin-top:
-                12px;
-        }
-
-
-        .admin-mini {
-
-            min-height:
-                32px;
-
-            padding:
-                5px 11px;
-
-            font-size:
-                12px;
-        }
-
-
-        /* =====================================================
-           EMPTY
-        ===================================================== */
-
-        .admin-empty {
-
-            text-align:
-                center;
-
-            padding:
-                30px 15px;
-
-            color:
-                var(--muted);
-        }
-
-
-        .admin-empty i {
-
-            font-size:
-                28px;
-
-            margin-bottom:
-                10px;
-
-            opacity:
-                .5;
-        }
-
-
-        /* =====================================================
-           NOTIFICATION
-        ===================================================== */
-
-        .admin-notification {
-
-            position:
-                fixed;
-
-            left:
-                20px;
-
-            bottom:
-                20px;
-
-            width:
-                min(
-                    360px,
-                    calc(100% - 40px)
-                );
-
-            background:
-                #fff;
-
-            border:
-                1px solid
-                var(--border);
-
-            border-radius:
-                16px;
-
-            padding:
-                15px;
-
-            box-shadow:
-                0 15px 45px
-                rgba(
-                    0,
-                    0,
-                    0,
-                    .14
-                );
-
-            z-index:
-                9999;
-        }
-
-
-        .admin-notification strong {
-
-            display:
-                block;
-
-            margin-bottom:
-                5px;
-        }
-
-
-        .admin-notification p {
-
-            margin:
-                0;
-
-            color:
-                var(--muted);
-
-            font-size:
-                13px;
-
-            line-height:
-                1.6;
-        }
-
-
-        /* =====================================================
-           RESPONSIVE
-        ===================================================== */
-
-        @media (
-            max-width: 900px
-        ) {
-
-            .admin-stats {
-
-                grid-template-columns:
-                    repeat(
-                        2,
-                        minmax(0, 1fr)
-                    );
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
-
 
             .admin-form-grid {
-
-                grid-template-columns:
-                    1fr;
+                grid-template-columns: 1fr;
             }
 
-
-            .admin-form-full {
-                grid-column:
-                    auto;
+            .full-width {
+                grid-column: auto;
             }
         }
 
-
-        @media (
-            max-width: 600px
-        ) {
-
-            .admin-wrap {
-
-                width:
-                    min(
-                        100% - 18px,
-                        1250px
-                    );
-
-                margin-top:
-                    15px;
-            }
-
-
-            .admin-card {
-                padding:
-                    16px;
-            }
-
-
-            .admin-stats {
-
-                grid-template-columns:
-                    1fr 1fr;
-            }
-
-
-            .admin-stat {
-                padding:
-                    14px 8px;
-            }
-
-
-            .admin-stat strong {
-                font-size:
-                    22px;
-            }
-
+        @media (max-width: 600px) {
 
             .admin-header {
-                align-items:
-                    flex-start;
+                align-items: flex-start;
+                flex-direction: column;
             }
 
-
-            .admin-actions {
-                width:
-                    100%;
+            .admin-header-actions {
+                width: 100%;
             }
 
-
-            .admin-actions .btn {
-                flex:
-                    1;
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
 
+            .login-card {
+                padding: 25px;
+            }
+
+            .admin-container {
+                width: 94%;
+            }
         }
-
     </style>
-
 </head>
 
 
 <body>
 
 
-<div class="admin-wrap">
-
-
     <!-- =====================================================
          LOGIN
     ====================================================== -->
 
-    <section
-        id="login"
-        class="admin-card admin-login">
+    <section id="login"
+        class="admin-login">
 
-        <div class="admin-login-icon">
+        <div class="login-card">
 
-            <i
-                class="fa-solid fa-shield-halved">
-            </i>
+            <h1>MindCare</h1>
 
-        </div>
-
-
-        <h1>
-            دخول الإدارة
-        </h1>
-
-
-        <p>
-            MindCare Admin
-        </p>
-
-
-        <form id="loginForm">
-
-            <div class="admin-field">
-
-                <label for="email">
-                    البريد الإلكتروني
-                </label>
-
-                <input
-                    id="email"
-                    type="email"
-                    autocomplete="username"
-                    placeholder="admin@example.com"
-                    required>
-
-            </div>
-
-
-            <div
-                class="admin-field"
-                style="margin-top:14px">
-
-                <label for="pass">
-                    كلمة المرور
-                </label>
-
-                <input
-                    id="pass"
-                    type="password"
-                    autocomplete="current-password"
-                    placeholder="••••••••"
-                    required>
-
-            </div>
-
-
-            <button
-                class="btn btn-primary full-width"
-                type="submit"
-                style="margin-top:16px">
-
-                <i
-                    class="fa-solid fa-right-to-bracket">
-                </i>
-
-                دخول لوحة التحكم
-
-            </button>
-
-
-            <p
-                id="loginErr"
-                class="err"
-                style="display:none">
+            <p>
+                تسجيل الدخول إلى لوحة الإدارة
             </p>
 
-        </form>
+
+            <form id="loginForm">
+
+                <div class="form-group">
+
+                    <label for="email">
+                        البريد الإلكتروني
+                    </label>
+
+                    <input
+                        id="email"
+                        type="email"
+                        autocomplete="email"
+                        placeholder="admin@example.com"
+                        required>
+
+                </div>
 
 
-        <div
-            style="
-                margin-top:18px;
-                text-align:center;
-            ">
+                <div class="form-group">
 
-            <a
-                class="text-link"
-                href="index.html">
+                    <label for="pass">
+                        كلمة المرور
+                    </label>
 
-                <i
-                    class="fa-solid fa-arrow-right">
-                </i>
+                    <input
+                        id="pass"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="••••••••"
+                        required>
 
-                العودة للموقع
+                </div>
 
-            </a>
+
+                <button
+                    class="btn"
+                    type="submit"
+                    style="width:100%;">
+
+                    تسجيل الدخول
+
+                </button>
+
+
+                <div
+                    id="loginErr"
+                    class="err"
+                    style="display:none;">
+                </div>
+
+            </form>
 
         </div>
 
@@ -1028,9 +525,9 @@
          ADMIN APP
     ====================================================== -->
 
-    <div
-        id="app"
-        hidden>
+    <section id="app"
+        class="admin-wrapper"
+        style="display:none;">
 
 
         <!-- HEADER -->
@@ -1040,26 +537,21 @@
             <div class="admin-brand">
 
                 <h1>
-                    لوحة التحكم
+                    MindCare
                 </h1>
 
                 <span>
-                    MindCare Admin
+                    لوحة إدارة الموقع
                 </span>
 
             </div>
 
 
-            <div class="admin-actions">
+            <div class="admin-header-actions">
 
                 <button
                     id="enableNotifications"
-                    class="btn btn-soft btn-small"
-                    type="button">
-
-                    <i
-                        class="fa-regular fa-bell">
-                    </i>
+                    class="btn secondary">
 
                     تفعيل الإشعارات
 
@@ -1067,12 +559,8 @@
 
 
                 <a
-                    class="btn btn-soft btn-small"
-                    href="index.html">
-
-                    <i
-                        class="fa-solid fa-globe">
-                    </i>
+                    href="index.html"
+                    class="btn">
 
                     الموقع
 
@@ -1081,14 +569,9 @@
 
                 <button
                     id="logout"
-                    class="btn btn-outline btn-small"
-                    type="button">
+                    class="btn danger">
 
-                    <i
-                        class="fa-solid fa-right-from-bracket">
-                    </i>
-
-                    خروج
+                    تسجيل الخروج
 
                 </button>
 
@@ -1098,894 +581,697 @@
 
 
 
-        <!-- =================================================
-             STATS
-        ================================================== -->
+        <!-- MAIN -->
 
-        <section class="admin-stats">
+        <main class="admin-container">
 
 
-            <div class="admin-stat">
+            <!-- STATS -->
 
-                <i
-                    class="fa-regular fa-calendar-check">
-                </i>
+            <section class="stats-grid">
 
-                <strong
-                    id="bookingCount">
-                    0
-                </strong>
+                <div class="stat-card">
 
-                <span>
-                    طلبات الحجز
-                </span>
+                    <span>
+                        إجمالي الحجوزات
+                    </span>
 
-            </div>
+                    <strong id="bookingCount">
+                        0
+                    </strong>
 
-
-            <div class="admin-stat">
-
-                <i
-                    class="fa-regular fa-clock">
-                </i>
-
-                <strong
-                    id="pendingCount">
-                    0
-                </strong>
-
-                <span>
-                    قيد الانتظار
-                </span>
-
-            </div>
+                </div>
 
 
-            <div class="admin-stat">
+                <div class="stat-card">
 
-                <i
-                    class="fa-solid fa-calendar-days">
-                </i>
+                    <span>
+                        الحجوزات المعلقة
+                    </span>
 
-                <strong
-                    id="slotCount">
-                    0
-                </strong>
+                    <strong id="pendingCount">
+                        0
+                    </strong>
 
-                <span>
-                    مواعيد متاحة
-                </span>
-
-            </div>
+                </div>
 
 
-            <div class="admin-stat">
+                <div class="stat-card">
 
-                <i
-                    class="fa-solid fa-layer-group">
-                </i>
+                    <span>
+                        المواعيد المتاحة
+                    </span>
 
-                <strong
-                    id="topicCount">
-                    0
-                </strong>
+                    <strong id="slotCount">
+                        0
+                    </strong>
 
-                <span>
+                </div>
+
+
+                <div class="stat-card">
+
+                    <span>
+                        الأقسام النشطة
+                    </span>
+
+                    <strong id="topicCount">
+                        0
+                    </strong>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- TABS -->
+
+            <nav class="admin-tabs">
+
+                <button
+                    class="active"
+                    data-tab="bookings">
+
+                    الحجوزات
+
+                </button>
+
+
+                <button
+                    data-tab="slots">
+
+                    المواعيد
+
+                </button>
+
+
+                <button
+                    data-tab="topics">
+
                     الأقسام
-                </span>
 
-            </div>
-
-        </section>
+                </button>
 
 
+                <button
+                    data-tab="providers">
 
-        <!-- =================================================
-             TABS
-        ================================================== -->
+                    المعالجون
 
-        <div class="admin-tabs">
+                </button>
 
-            <button
-                class="btn btn-primary btn-small"
-                data-tab="bookings"
-                type="button">
-
-                <i
-                    class="fa-regular fa-calendar-check">
-                </i>
-
-                الحجوزات
-
-            </button>
-
-
-            <button
-                class="btn btn-soft btn-small"
-                data-tab="slots"
-                type="button">
-
-                <i
-                    class="fa-regular fa-clock">
-                </i>
-
-                المواعيد
-
-            </button>
-
-
-            <button
-                class="btn btn-soft btn-small"
-                data-tab="topics"
-                type="button">
-
-                <i
-                    class="fa-solid fa-layer-group">
-                </i>
-
-                الأقسام
-
-            </button>
-
-
-            <button
-                class="btn btn-soft btn-small"
-                data-tab="providers"
-                type="button">
-
-                <i
-                    class="fa-solid fa-user-doctor">
-                </i>
-
-                المختصون
-
-            </button>
-
-        </div>
+            </nav>
 
 
 
-        <!-- =================================================
-             BOOKINGS
-        ================================================== -->
+            <!-- =================================================
+                 BOOKINGS
+            ================================================== -->
 
-        <section
-            id="p-bookings"
-            class="admin-card">
+            <section
+                id="p-bookings"
+                class="admin-panel active">
 
-            <div
-                class="admin-section-head">
-
-                <div>
+                <div class="panel-card">
 
                     <h2>
-                        طلبات الحجز
+                        الحجوزات
                     </h2>
 
-                    <p class="admin-note">
-                        الحجوزات تظهر هنا مباشرة من Firestore.
-                    </p>
+                    <div class="table-wrapper">
 
-                </div>
+                        <table>
 
-            </div>
+                            <thead>
 
+                                <tr>
 
-            <div class="admin-table-wrap">
+                                    <th>
+                                        الاسم
+                                    </th>
 
-                <table class="admin-table">
+                                    <th>
+                                        الهاتف
+                                    </th>
 
-                    <thead>
+                                    <th>
+                                        المعالج
+                                    </th>
 
-                        <tr>
+                                    <th>
+                                        التاريخ
+                                    </th>
 
-                            <th>
-                                الطلب
-                            </th>
+                                    <th>
+                                        الوقت
+                                    </th>
 
-                            <th>
-                                الاسم
-                            </th>
+                                    <th>
+                                        الرسالة
+                                    </th>
 
-                            <th>
-                                الهاتف
-                            </th>
+                                    <th>
+                                        الحالة
+                                    </th>
 
-                            <th>
-                                المختص
-                            </th>
+                                    <th>
+                                        الإجراءات
+                                    </th>
 
-                            <th>
-                                الموعد
-                            </th>
+                                </tr>
 
-                            <th>
-                                الحالة
-                            </th>
-
-                            <th>
-                                الإجراءات
-                            </th>
-
-                        </tr>
-
-                    </thead>
+                            </thead>
 
 
-                    <tbody id="bookRows">
+                            <tbody id="bookRows">
 
-                        <tr>
+                                <tr>
 
-                            <td
-                                colspan="7"
-                                class="admin-empty">
+                                    <td colspan="8">
+                                        جاري تحميل الحجوزات...
+                                    </td>
 
-                                جاري تحميل الحجوزات...
+                                </tr>
 
-                            </td>
+                            </tbody>
 
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- =================================================
-             SLOTS
-        ================================================== -->
-
-        <section
-            id="p-slots"
-            class="admin-card"
-            hidden>
-
-
-            <div
-                class="admin-section-head">
-
-                <div>
-
-                    <h2>
-                        إدارة المواعيد
-                    </h2>
-
-                    <p class="admin-note">
-                        أنت تحدد الأيام والأوقات التي يستطيع العميل حجزها.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-
-            <!-- ADD SLOT -->
-
-            <form id="slotForm">
-
-                <div class="admin-form-grid">
-
-
-                    <div class="admin-field">
-
-                        <label for="sProv">
-                            المختص
-                        </label>
-
-                        <select id="sProv">
-
-                            <option value="">
-                                جاري تحميل المختصين...
-                            </option>
-
-                        </select>
+                        </table>
 
                     </div>
 
+                </div>
 
-                    <div class="admin-field">
+            </section>
 
-                        <label for="sDate">
-                            التاريخ
-                        </label>
 
-                        <input
-                            id="sDate"
-                            type="date"
-                            required>
+
+            <!-- =================================================
+                 SLOTS
+            ================================================== -->
+
+            <section
+                id="p-slots"
+                class="admin-panel">
+
+                <div class="panel-card">
+
+                    <h2>
+                        إضافة مواعيد متاحة
+                    </h2>
+
+
+                    <form id="slotForm">
+
+                        <div class="admin-form-grid">
+
+
+                            <div class="form-group">
+
+                                <label for="sProv">
+                                    المعالج
+                                </label>
+
+                                <select
+                                    id="sProv"
+                                    required>
+
+                                    <option value="">
+                                        اختر المعالج
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="sDate">
+                                    التاريخ
+                                </label>
+
+                                <input
+                                    id="sDate"
+                                    type="date"
+                                    required>
+
+                            </div>
+
+
+                            <div class="form-group full-width">
+
+                                <label for="sTimes">
+                                    الأوقات
+                                </label>
+
+                                <input
+                                    id="sTimes"
+                                    type="text"
+                                    placeholder="10:00, 11:00, 12:00"
+                                    required>
+
+                            </div>
+
+
+                            <div class="full-width">
+
+                                <button
+                                    class="btn"
+                                    type="submit">
+
+                                    إضافة المواعيد
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            id="slotMsg"
+                            style="display:none;">
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+
+                <div class="panel-card">
+
+                    <h2>
+                        المواعيد الحالية
+                    </h2>
+
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        المعالج
+                                    </th>
+
+                                    <th>
+                                        التاريخ
+                                    </th>
+
+                                    <th>
+                                        الوقت
+                                    </th>
+
+                                    <th>
+                                        الحالة
+                                    </th>
+
+                                    <th>
+                                        الإجراء
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody id="slotRows">
+
+                                <tr>
+
+                                    <td colspan="5">
+                                        جاري تحميل المواعيد...
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
 
                     </div>
 
+                </div>
 
-                    <div
-                        class="admin-field admin-form-full">
-
-                        <label for="sTimes">
-
-                            الأوقات
-
-                        </label>
-
-                        <input
-                            id="sTimes"
-                            type="text"
-                            dir="ltr"
-                            placeholder="10:00, 11:30, 14:00"
-                            required>
+            </section>
 
 
-                        <p class="admin-note">
 
-                            افصل بين كل موعد والآخر بفاصلة.
+            <!-- =================================================
+                 TOPICS
+            ================================================== -->
 
-                            مثال:
-                            10:00, 11:30, 14:00
+            <section
+                id="p-topics"
+                class="admin-panel">
 
+                <div class="panel-card">
+
+                    <h2>
+                        إضافة قسم جديد
+                    </h2>
+
+
+                    <form id="topicForm">
+
+                        <div class="admin-form-grid">
+
+
+                            <div class="form-group">
+
+                                <label for="tKey">
+                                    مفتاح القسم
+                                </label>
+
+                                <input
+                                    id="tKey"
+                                    type="text"
+                                    placeholder="anxiety"
+                                    required>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="tTitle">
+                                    اسم القسم بالعربية
+                                </label>
+
+                                <input
+                                    id="tTitle"
+                                    type="text"
+                                    placeholder="القلق والتوتر"
+                                    required>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="tTitleEn">
+                                    اسم القسم بالإنجليزية
+                                </label>
+
+                                <input
+                                    id="tTitleEn"
+                                    type="text"
+                                    placeholder="Anxiety & Stress">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="tIntro">
+                                    الوصف بالعربية
+                                </label>
+
+                                <textarea
+                                    id="tIntro"
+                                    placeholder="اكتب وصف القسم...">
+                                </textarea>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="tIntroEn">
+                                    الوصف بالإنجليزية
+                                </label>
+
+                                <textarea
+                                    id="tIntroEn"
+                                    placeholder="Write section description...">
+                                </textarea>
+
+                            </div>
+
+
+                            <div class="form-group full-width">
+
+                                <label for="tSymptoms">
+                                    الأعراض / التفاصيل
+                                </label>
+
+                                <textarea
+                                    id="tSymptoms"
+                                    placeholder="اكتب التفاصيل هنا...">
+                                </textarea>
+
+                            </div>
+
+
+                            <div class="full-width">
+
+                                <button
+                                    class="btn"
+                                    type="submit">
+
+                                    حفظ القسم
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            id="topicMsg"
+                            style="display:none;">
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+
+                <div class="panel-card">
+
+                    <h2>
+                        الأقسام الحالية
+                    </h2>
+
+                    <div id="topicsList">
+
+                        <p>
+                            جاري تحميل الأقسام...
                         </p>
 
                     </div>
 
                 </div>
 
-
-                <div class="admin-form-actions">
-
-                    <button
-                        class="btn btn-primary"
-                        type="submit">
-
-                        <i
-                            class="fa-solid fa-plus">
-                        </i>
-
-                        إضافة المواعيد
-
-                    </button>
-
-                </div>
-
-            </form>
-
-
-            <p
-                id="slotMsg"
-                class="admin-note">
-            </p>
+            </section>
 
 
 
-            <!-- SLOT LIST -->
+            <!-- =================================================
+                 PROVIDERS
+            ================================================== -->
 
-            <div
-                style="margin-top:25px">
+            <section
+                id="p-providers"
+                class="admin-panel">
 
-                <h3>
-                    المواعيد الحالية
-                </h3>
-
-            </div>
-
-
-            <div class="admin-table-wrap">
-
-                <table class="admin-table">
-
-                    <thead>
-
-                        <tr>
-
-                            <th>
-                                المختص
-                            </th>
-
-                            <th>
-                                التاريخ
-                            </th>
-
-                            <th>
-                                الوقت
-                            </th>
-
-                            <th>
-                                الحالة
-                            </th>
-
-                            <th>
-                                الإجراءات
-                            </th>
-
-                        </tr>
-
-                    </thead>
-
-
-                    <tbody id="slotRows">
-
-                        <tr>
-
-                            <td
-                                colspan="5"
-                                class="admin-empty">
-
-                                جاري تحميل المواعيد...
-
-                            </td>
-
-                        </tr>
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- =================================================
-             TOPICS / SECTIONS
-        ================================================== -->
-
-        <section
-            id="p-topics"
-            class="admin-card"
-            hidden>
-
-
-            <div
-                class="admin-section-head">
-
-                <div>
+                <div class="panel-card">
 
                     <h2>
-                        إدارة الأقسام
+                        إضافة معالج جديد
                     </h2>
 
-                    <p class="admin-note">
 
-                        يمكنك إضافة أقسام جديدة للموقع
-                        بدون تعديل ملفات الموقع يدويًا.
+                    <form id="providerForm">
 
-                    </p>
+                        <div class="admin-form-grid">
+
+
+                            <div class="form-group">
+
+                                <label for="providerName">
+                                    الاسم بالعربية
+                                </label>
+
+                                <input
+                                    id="providerName"
+                                    type="text"
+                                    placeholder="د. ..."
+                                    required>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="providerNameEn">
+                                    الاسم بالإنجليزية
+                                </label>
+
+                                <input
+                                    id="providerNameEn"
+                                    type="text"
+                                    placeholder="Dr. ...">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="providerSpecialtyAr">
+                                    التخصص بالعربية
+                                </label>
+
+                                <input
+                                    id="providerSpecialtyAr"
+                                    type="text"
+                                    placeholder="العلاج النفسي">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="providerSpecialtyEn">
+                                    التخصص بالإنجليزية
+                                </label>
+
+                                <input
+                                    id="providerSpecialtyEn"
+                                    type="text"
+                                    placeholder="Psychotherapy">
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="providerBioAr">
+                                    نبذة بالعربية
+                                </label>
+
+                                <textarea
+                                    id="providerBioAr"
+                                    placeholder="اكتب نبذة عن المعالج...">
+                                </textarea>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label for="providerBioEn">
+                                    نبذة بالإنجليزية
+                                </label>
+
+                                <textarea
+                                    id="providerBioEn"
+                                    placeholder="Write provider bio...">
+                                </textarea>
+
+                            </div>
+
+
+                            <div class="full-width">
+
+                                <button
+                                    class="btn"
+                                    type="submit">
+
+                                    إضافة المعالج
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            id="providerMsg"
+                            style="display:none;">
+                        </div>
+
+                    </form>
 
                 </div>
 
-            </div>
 
 
+                <div class="panel-card">
 
-            <!-- ADD TOPIC -->
+                    <h2>
+                        المعالجون الحاليون
+                    </h2>
 
-            <form id="topicForm">
+                    <div id="providersList">
 
-                <div class="admin-form-grid">
-
-
-                    <div class="admin-field">
-
-                        <label for="tKey">
-                            معرّف القسم
-                        </label>
-
-                        <input
-                            id="tKey"
-                            type="text"
-                            dir="ltr"
-                            placeholder="stress-management"
-                            required>
-
-                        <p class="admin-note">
-
-                            استخدم الإنجليزية والشرطة فقط.
-
-                        </p>
-
-                    </div>
-
-
-                    <div class="admin-field">
-
-                        <label for="tTitle">
-                            اسم القسم بالعربية
-                        </label>
-
-                        <input
-                            id="tTitle"
-                            type="text"
-                            placeholder="إدارة الضغط النفسي"
-                            required>
-
-                    </div>
-
-
-                    <div class="admin-field">
-
-                        <label for="tTitleEn">
-                            اسم القسم بالإنجليزية
-                        </label>
-
-                        <input
-                            id="tTitleEn"
-                            type="text"
-                            dir="ltr"
-                            placeholder="Stress Management">
-
-                    </div>
-
-
-                    <div
-                        class="admin-field admin-form-full">
-
-                        <label for="tIntro">
-                            وصف القسم بالعربية
-                        </label>
-
-                        <textarea
-                            id="tIntro"
-                            placeholder="اكتب وصفًا مختصرًا للقسم..."
-                            required>
-                        </textarea>
-
-                    </div>
-
-
-                    <div
-                        class="admin-field admin-form-full">
-
-                        <label for="tIntroEn">
-                            وصف القسم بالإنجليزية
-                        </label>
-
-                        <textarea
-                            id="tIntroEn"
-                            dir="ltr"
-                            placeholder="Write a short description...">
-                        </textarea>
-
-                    </div>
-
-
-                    <div
-                        class="admin-field admin-form-full">
-
-                        <label for="tSymptoms">
-                            الأعراض / النقاط المهمة
-                        </label>
-
-                        <textarea
-                            id="tSymptoms"
-                            placeholder="القلق, صعوبة النوم, التوتر">
-                        </textarea>
-
-                        <p class="admin-note">
-
-                            افصل بين العناصر باستخدام فاصلة.
-
+                        <p>
+                            جاري تحميل المعالجين...
                         </p>
 
                     </div>
 
                 </div>
 
+            </section>
 
-                <div class="admin-form-actions">
 
-                    <button
-                        class="btn btn-primary"
-                        type="submit">
+        </main>
 
-                        <i
-                            class="fa-solid fa-plus">
-                        </i>
 
-                        إضافة / حفظ القسم
 
-                    </button>
+        <!-- FOOTER -->
 
-                </div>
-
-            </form>
-
-
-            <p
-                id="topicMsg"
-                class="admin-note">
-            </p>
-
-
-
-            <!-- TOPICS LIST -->
-
-            <div
-                style="margin-top:25px">
-
-                <h3>
-                    الأقسام الحالية
-                </h3>
-
-            </div>
-
-
-            <div
-                id="topicsList"
-                class="admin-list">
-
-                <div class="admin-empty">
-
-                    جاري تحميل الأقسام...
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- =================================================
-             PROVIDERS
-        ================================================== -->
-
-        <section
-            id="p-providers"
-            class="admin-card"
-            hidden>
-
-
-            <div
-                class="admin-section-head">
-
-                <div>
-
-                    <h2>
-                        إدارة المختصين
-                    </h2>
-
-                    <p class="admin-note">
-
-                        أضف مختصين جدد، وسيظهرون تلقائيًا
-                        في نظام الحجز بعد ربط صفحة الحجز.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-
-
-            <!-- ADD PROVIDER -->
-
-            <form id="providerForm">
-
-                <div class="admin-form-grid">
-
-
-                    <div class="admin-field">
-
-                        <label for="providerName">
-
-                            الاسم بالعربية
-
-                        </label>
-
-                        <input
-                            id="providerName"
-                            type="text"
-                            placeholder="تسبيح محمد"
-                            required>
-
-                    </div>
-
-
-                    <div class="admin-field">
-
-                        <label for="providerNameEn">
-
-                            الاسم بالإنجليزية
-
-                        </label>
-
-                        <input
-                            id="providerNameEn"
-                            type="text"
-                            dir="ltr"
-                            placeholder="Tasbeh Mohamed">
-
-                    </div>
-
-
-                    <div class="admin-field">
-
-                        <label for="providerSpecialtyAr">
-
-                            التخصص بالعربية
-
-                        </label>
-
-                        <input
-                            id="providerSpecialtyAr"
-                            type="text"
-                            placeholder="العلاج النفسي والنمو الشخصي">
-
-                    </div>
-
-
-                    <div class="admin-field">
-
-                        <label for="providerSpecialtyEn">
-
-                            التخصص بالإنجليزية
-
-                        </label>
-
-                        <input
-                            id="providerSpecialtyEn"
-                            type="text"
-                            dir="ltr"
-                            placeholder="Psychotherapy & Personal Growth">
-
-                    </div>
-
-
-                    <div
-                        class="admin-field admin-form-full">
-
-                        <label for="providerBioAr">
-
-                            نبذة بالعربية
-
-                        </label>
-
-                        <textarea
-                            id="providerBioAr"
-                            placeholder="اكتب نبذة مختصرة عن المختص...">
-                        </textarea>
-
-                    </div>
-
-
-                    <div
-                        class="admin-field admin-form-full">
-
-                        <label for="providerBioEn">
-
-                            Bio in English
-
-                        </label>
-
-                        <textarea
-                            id="providerBioEn"
-                            dir="ltr"
-                            placeholder="Write a short professional biography...">
-                        </textarea>
-
-                    </div>
-
-                </div>
-
-
-                <div class="admin-form-actions">
-
-                    <button
-                        class="btn btn-primary"
-                        type="submit">
-
-                        <i
-                            class="fa-solid fa-user-plus">
-                        </i>
-
-                        إضافة مختص
-
-                    </button>
-
-                </div>
-
-            </form>
-
-
-            <p
-                id="providerMsg"
-                class="admin-note">
-            </p>
-
-
-
-            <!-- PROVIDERS LIST -->
-
-            <div
-                style="margin-top:25px">
-
-                <h3>
-                    المختصون الحاليون
-                </h3>
-
-            </div>
-
-
-            <div
-                id="providersList"
-                class="admin-list">
-
-                <div class="admin-empty">
-
-                    جاري تحميل المختصين...
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-
-        <!-- =================================================
-             FOOTER
-        ================================================== -->
-
-        <footer
-            style="
-                text-align:center;
-                padding:25px 10px;
-                color:var(--muted);
-                font-size:12px;
-            ">
+        <footer class="admin-footer">
 
             Prepared By Eng Ahmad Ramadan
 
         </footer>
 
+    </section>
+
+
+
+    <!-- =====================================================
+         NOTIFICATION
+    ====================================================== -->
+
+    <div
+        id="notification"
+        class="notification">
+
+        <strong id="notificationTitle">
+            حجز جديد
+        </strong>
+
+        <p id="notificationBody">
+            تم استلام حجز جديد.
+        </p>
+
     </div>
 
-</div>
 
 
+    <!-- =====================================================
+         FIREBASE
+    ====================================================== -->
 
-<!-- =====================================================
-     NEW BOOKING NOTIFICATION
-====================================================== -->
+    <script src="firebase-config.js"></script>
 
-<div
-    id="notification"
-    class="admin-notification"
-    hidden>
-
-    <strong id="notificationTitle">
-        حجز جديد
-    </strong>
-
-    <p id="notificationBody">
-        يوجد حجز جديد.
-    </p>
-
-</div>
-
-
-
-<!-- =====================================================
-     FIREBASE CONFIG
-====================================================== -->
-
-<script src="firebase-config.js"></script>
-
-
-<!-- =====================================================
-     ADMIN FIREBASE
-====================================================== -->
-
-<script
-    type="module"
-    src="admin-firebase.js">
-</script>
+    <script
+        type="module"
+        src="admin-firebase.js">
+    </script>
 
 
 </body>
 
-  </html>
+    </html>
