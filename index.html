@@ -1,9 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <meta name="theme-color" content="#6f897b">
 
@@ -28,18 +28,13 @@
 
 <body>
 
-    <!-- =========================
-         HEADER
-    ========================== -->
-    <header class="site-header">
+    <!-- ================= HEADER ================= -->
+
+    <header class="site-header" id="siteHeader">
 
         <div class="container header-inner">
 
-            <a
-                class="brand"
-                href="#home"
-                data-scroll="home"
-                aria-label="MindCare Home">
+            <a href="#home" class="brand" aria-label="MindCare">
 
                 <span class="brand-mark">
                     <i class="fa-solid fa-leaf"></i>
@@ -52,50 +47,25 @@
 
             </a>
 
-            <nav id="mainNav" class="main-nav">
+            <nav class="main-nav" id="mainNav">
 
-                <a
-                    class="nav-link active"
-                    data-scroll="home"
-                    href="#home"
-                    data-ar="الرئيسية"
-                    data-en="Home">
+                <a href="#home" class="nav-link active">
                     الرئيسية
                 </a>
 
-                <a
-                    class="nav-link"
-                    data-scroll="how"
-                    href="#how"
-                    data-ar="كيف تعمل"
-                    data-en="How It Works">
+                <a href="#how-it-works" class="nav-link">
                     كيف تعمل
                 </a>
 
-                <a
-                    class="nav-link"
-                    data-scroll="topics"
-                    href="#topics"
-                    data-ar="الصحة النفسية"
-                    data-en="Mental Health">
+                <a href="#topics" class="nav-link">
                     الصحة النفسية
                 </a>
 
-                <a
-                    class="nav-link"
-                    data-scroll="specialists"
-                    href="#specialists"
-                    data-ar="المختصون"
-                    data-en="Specialists">
+                <a href="#specialists" class="nav-link">
                     المختصون
                 </a>
 
-                <a
-                    class="nav-link"
-                    data-scroll="faq"
-                    href="#faq"
-                    data-ar="الأسئلة الشائعة"
-                    data-en="FAQ">
+                <a href="#faq" class="nav-link">
                     الأسئلة الشائعة
                 </a>
 
@@ -104,8 +74,8 @@
             <div class="header-actions">
 
                 <button
-                    id="languageSwitch"
                     class="language-switch"
+                    id="languageSwitch"
                     type="button"
                     aria-label="Change language">
                     EN
@@ -114,25 +84,18 @@
                 <button
                     class="btn btn-primary btn-small"
                     type="button"
-                    data-action="booking">
-
-                    <span
-                        data-ar="ابدأ الحجز"
-                        data-en="Book a Session">
-                        ابدأ الحجز
-                    </span>
-
+                    data-open-booking>
+                    ابدأ الحجز
                     <i class="fa-solid fa-arrow-left"></i>
-
                 </button>
 
             </div>
 
             <button
-                id="menuToggle"
                 class="menu-toggle"
+                id="menuToggle"
                 type="button"
-                aria-label="Menu"
+                aria-label="فتح القائمة"
                 aria-expanded="false">
 
                 <span></span>
@@ -146,31 +109,29 @@
     </header>
 
 
-    <!-- =========================
-         MAIN
-    ========================== -->
     <main id="home">
 
+        <!-- ================= HERO ================= -->
 
-        <!-- =========================
-             HERO
-        ========================== -->
-        <section class="hero">
+        <section class="hero-section">
 
-            <div class="hero-shape one"></div>
-            <div class="hero-shape two"></div>
+            <div class="hero-shape hero-shape-one"></div>
+            <div class="hero-shape hero-shape-two"></div>
 
             <div class="container hero-grid">
 
-                <div>
+                <div class="hero-content">
 
                     <div class="eyebrow">
-                        <b></b>
+
+                        <span class="eyebrow-dot"></span>
+
                         <span
-                            data-ar="الصحة النفسية"
+                            data-ar="Mental Wellness"
                             data-en="Mental Wellness">
                             Mental Wellness
                         </span>
+
                     </div>
 
                     <h1
@@ -180,110 +141,93 @@
                     </h1>
 
                     <p
-                        class="lead"
-                        data-ar="MindCare تمنحك مساحة آمنة وهادئة لفهم ما تمر به، واستكشاف احتياجاتك النفسية، والوصول إلى دعم مناسب عندما تحتاج إليه."
-                        data-en="MindCare gives you a calm space to understand what you are going through, explore your needs, and find appropriate support.">
+                        class="hero-lead"
+                        data-ar="MindCare تمنحك مساحة آمنة وهادئة لفهم ما تمر به، واستكشاف احتياجاتك النفسية، والوصول إلى مختص مناسب عندما تحتاج إلى الدعم."
+                        data-en="MindCare gives you a calm space to understand what you are experiencing, explore your needs and find suitable professional support.">
                         MindCare تمنحك مساحة آمنة وهادئة لفهم ما تمر به،
-                        واستكشاف احتياجاتك النفسية، والوصول إلى دعم مناسب
-                        عندما تحتاج إليه.
+                        واستكشاف احتياجاتك النفسية، والوصول إلى مختص مناسب
+                        عندما تحتاج إلى الدعم.
                     </p>
 
-                    <div class="actions">
+                    <div class="hero-actions">
 
                         <button
                             class="btn btn-primary"
                             type="button"
-                            data-action="booking">
+                            data-open-booking>
 
-                            <span
-                                data-ar="ابدأ الحجز"
-                                data-en="Book a Session">
-                                ابدأ الحجز
-                            </span>
-
+                            ابدأ الحجز
                             <i class="fa-solid fa-arrow-left"></i>
 
                         </button>
 
-                        <button
-                            class="btn btn-outline"
-                            type="button"
-                            data-scroll="specialists">
-
-                            <span
-                                data-ar="استكشف المختصين"
-                                data-en="Explore Specialists">
-                                استكشف المختصين
-                            </span>
-
-                        </button>
+                        <a
+                            href="#specialists"
+                            class="btn btn-outline">
+                            استكشف المختصين
+                        </a>
 
                     </div>
 
-                    <p class="note">
+                    <div class="hero-note">
 
                         <i class="fa-solid fa-shield-heart"></i>
 
-                        <span
-                            data-ar="خصوصيتك وراحتك جزء أساسي من التجربة"
-                            data-en="Your privacy and comfort matter.">
+                        <span>
                             خصوصيتك وراحتك جزء أساسي من التجربة
                         </span>
 
-                    </p>
+                    </div>
 
                 </div>
 
 
-                <!-- HERO VISUAL -->
+                <div class="hero-visual">
 
-                <div class="hero-art">
+                    <div class="visual-backdrop"></div>
 
                     <div class="visual-card">
 
                         <div class="visual-top">
 
-                            <span>●</span>
-
-                            <span
-                                data-ar="مساحة آمنة"
-                                data-en="Safe space">
+                            <span class="visual-status">
+                                <span class="status-dot"></span>
                                 مساحة آمنة
                             </span>
 
-                            <span>♡</span>
+                            <i class="fa-regular fa-heart"></i>
 
                         </div>
 
-                        <div class="landscape">
+                        <div class="visual-illustration">
 
-                            <i class="sun"></i>
+                            <div class="sun-circle"></div>
 
-                            <i class="hill h1"></i>
-                            <i class="hill h2"></i>
+                            <div class="hill hill-one"></div>
+                            <div class="hill hill-two"></div>
 
-                            <i class="plant p1"></i>
-                            <i class="plant p2"></i>
+                            <div class="plant plant-one">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+
+                            <div class="plant plant-two">
+                                <span></span>
+                                <span></span>
+                            </div>
 
                         </div>
 
-                        <div class="visual-copy">
+                        <div class="visual-message">
 
-                            <small
-                                data-ar="خذ وقتك"
-                                data-en="Take your time">
-                                خذ وقتك
-                            </small>
+                            <small>خذ وقتك</small>
 
-                            <strong
-                                data-ar="افهم نفسك بشكل أفضل"
-                                data-en="Understand yourself better">
+                            <strong>
                                 افهم نفسك بشكل أفضل
                             </strong>
 
-                            <p
-                                data-ar="خطوة صغيرة نحو فهم مشاعرك قد تكون بداية تغيير مهم."
-                                data-en="A small step toward understanding your feelings can be the beginning of meaningful change.">
+                            <p>
                                 خطوة صغيرة نحو فهم مشاعرك قد تكون بداية تغيير مهم.
                             </p>
 
@@ -291,29 +235,29 @@
 
                     </div>
 
+                    <div class="floating-card floating-card-top">
 
-                    <div class="float top">
-
-                        <i class="fa-regular fa-calendar"></i>
-
-                        <span
-                            data-ar="اختر الموعد المناسب"
-                            data-en="Choose your time">
-                            اختر الموعد المناسب
+                        <span class="floating-icon">
+                            <i class="fa-regular fa-calendar"></i>
                         </span>
+
+                        <div>
+                            <small>وقتك</small>
+                            <strong>اختر الموعد المناسب</strong>
+                        </div>
 
                     </div>
 
+                    <div class="floating-card floating-card-bottom">
 
-                    <div class="float bottom">
-
-                        <i class="fa-solid fa-leaf"></i>
-
-                        <span
-                            data-ar="أنت تستحق أن تُفهم"
-                            data-en="You deserve to be understood">
-                            أنت تستحق أن تُفهم
+                        <span class="floating-icon">
+                            <i class="fa-solid fa-leaf"></i>
                         </span>
+
+                        <div>
+                            <small>بدون أحكام</small>
+                            <strong>أنت تستحق أن تُفهم</strong>
+                        </div>
 
                     </div>
 
@@ -324,186 +268,289 @@
         </section>
 
 
-        <!-- =========================
-             INTRO
-        ========================== -->
-        <section class="intro">
+        <!-- ================= INTRO ================= -->
 
-            <div class="container two">
+        <section class="intro-section">
 
-                <div>
+            <div class="container intro-grid">
 
-                    <span class="kicker">01</span>
+                <div class="section-label">
 
-                    <small
-                        data-ar="لماذا MindCare؟"
-                        data-en="Why MindCare?">
-                        لماذا MindCare؟
-                    </small>
-
-                    <h2
-                        data-ar="الصحة النفسية ليست فقط وقت الأزمات."
-                        data-en="Mental wellness is not only about crisis moments.">
-                        الصحة النفسية ليست فقط وقت الأزمات.
-                    </h2>
-
-                </div>
-
-
-                <div>
-
-                    <p
-                        data-ar="قد تحتاج إلى شخص يساعدك على فهم القلق، التعامل مع ضغوط الحياة، تحسين علاقتك بنفسك أو بالآخرين، أو التعامل مع تجربة صعبة."
-                        data-en="You may need help understanding anxiety, handling pressure, improving relationships, or processing a difficult experience.">
-                        قد تحتاج إلى شخص يساعدك على فهم القلق،
-                        التعامل مع ضغوط الحياة، تحسين علاقتك بنفسك
-                        أو بالآخرين، أو التعامل مع تجربة صعبة.
-                    </p>
-
-                    <button
-                        class="text-link"
-                        type="button"
-                        data-scroll="topics"
-                        data-ar="استكشف الموضوعات ←"
-                        data-en="Explore topics →">
-                        استكشف الموضوعات ←
-                    </button>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             TOPICS
-        ========================== -->
-        <section id="topics" class="section">
-
-            <div class="container">
-
-                <div class="heading">
+                    <span>01</span>
 
                     <div>
 
-                        <span
-                            class="kicker"
-                            data-ar="افهم ما تمر به"
-                            data-en="Understand what you are experiencing">
+                        <small>لماذا MindCare؟</small>
+
+                        <h2>
+                            الصحة النفسية ليست فقط وقت الأزمات.
+                        </h2>
+
+                    </div>
+
+                </div>
+
+                <div class="intro-copy">
+
+                    <p>
+                        قد تحتاج إلى شخص يساعدك على فهم القلق،
+                        التعامل مع ضغوط الحياة، تحسين علاقتك بنفسك
+                        أو بالآخرين، أو التعامل مع تجربة صعبة مررت بها.
+                    </p>
+
+                    <a href="#topics" class="text-link">
+                        استكشف الموضوعات
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= TOPICS ================= -->
+
+        <section class="topics-section section-padding" id="topics">
+
+            <div class="container">
+
+                <div class="section-heading">
+
+                    <div>
+
+                        <span class="section-kicker">
                             افهم ما تمر به
                         </span>
 
-                        <h2
-                            data-ar="موضوعات نفسية تستحق أن تعرف عنها أكثر"
-                            data-en="Mental health topics worth knowing more about">
+                        <h2>
                             موضوعات نفسية تستحق أن تعرف عنها أكثر
                         </h2>
 
                     </div>
 
-                    <p
-                        data-ar="اضغط على أي موضوع لقراءة شرح، علامات محتملة، تأثيرات، ومتى قد يكون من المفيد طلب الدعم. المعلومات للتثقيف وليست تشخيصًا."
-                        data-en="Open any topic for an explanation, possible signs, effects, and when support may help. Educational information is not a diagnosis.">
-                        اضغط على أي موضوع لقراءة شرح، علامات محتملة،
-                        تأثيرات، ومتى قد يكون من المفيد طلب الدعم.
-                        المعلومات للتثقيف وليست تشخيصًا.
+                    <p>
+                        المعرفة لا تعني تشخيص نفسك.
+                        هذه المعلومات تساعدك على فهم بعض العلامات
+                        التي قد تستحق التحدث عنها مع مختص.
                     </p>
 
                 </div>
 
-                <!-- Firebase topics -->
-                <div
-                    id="topicsGrid"
-                    class="cards">
-                </div>
 
-            </div>
+                <div class="topics-grid">
 
-        </section>
+                    <button class="topic-card" data-topic="anxiety">
+
+                        <span class="topic-number">01</span>
+
+                        <span class="topic-icon">
+                            <i class="fa-solid fa-wind"></i>
+                        </span>
+
+                        <h3>القلق والتوتر</h3>
+
+                        <p>
+                            افهم القلق وأعراضه وتأثيره على الحياة اليومية.
+                        </p>
+
+                        <span class="card-link">
+                            اعرف أكثر
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </span>
+
+                    </button>
 
 
-        <!-- =========================
-             ADDICTION
-        ========================== -->
-        <section class="section soft">
+                    <button class="topic-card" data-topic="depression">
 
-            <div class="container feature">
+                        <span class="topic-number">02</span>
 
-                <div>
+                        <span class="topic-icon">
+                            <i class="fa-regular fa-cloud"></i>
+                        </span>
 
-                    <span
-                        class="kicker"
-                        data-ar="الدعم بدون أحكام"
-                        data-en="Support without judgment">
-                        الدعم بدون أحكام
-                    </span>
+                        <h3>الاكتئاب</h3>
 
-                    <h2
-                        data-ar="الإدمان واستخدام المواد"
-                        data-en="Addiction & Substance Use">
-                        الإدمان واستخدام المواد
-                    </h2>
+                        <p>
+                            تعرف على العلامات الشائعة للاكتئاب وتأثيره.
+                        </p>
 
-                    <p
-                        data-ar="قد يظهر اضطراب استخدام المواد في صعوبة التحكم في الاستخدام أو الاستمرار رغم الأضرار. فهم العلامات مبكرًا قد يساعد على الوصول إلى تقييم ودعم مناسبين."
-                        data-en="Substance use disorder may involve difficulty controlling use or continuing despite harm. Understanding signs early can help someone seek appropriate assessment and support.">
-                        قد يظهر اضطراب استخدام المواد في صعوبة التحكم
-                        في الاستخدام أو الاستمرار رغم الأضرار.
-                        فهم العلامات مبكرًا قد يساعد على الوصول إلى
-                        تقييم ودعم مناسبين.
-                    </p>
+                        <span class="card-link">
+                            اعرف أكثر
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </span>
 
-                    <ul>
+                    </button>
 
-                        <li
-                            data-ar="صعوبة التحكم في الاستخدام"
-                            data-en="Difficulty controlling use">
-                            صعوبة التحكم في الاستخدام
-                        </li>
 
-                        <li
-                            data-ar="الاستمرار رغم الأضرار"
-                            data-en="Continuing despite harm">
-                            الاستمرار رغم الأضرار
-                        </li>
+                    <button class="topic-card" data-topic="panic">
 
-                        <li
-                            data-ar="تأثيره على العلاقات أو العمل أو الدراسة"
-                            data-en="Impact on relationships, work, or study">
-                            تأثيره على العلاقات أو العمل أو الدراسة
-                        </li>
+                        <span class="topic-number">03</span>
 
-                    </ul>
+                        <span class="topic-icon">
+                            <i class="fa-solid fa-heart-pulse"></i>
+                        </span>
 
-                    <button
-                        class="btn btn-primary"
-                        type="button"
-                        data-topic="addiction"
-                        data-ar="تعرف على الإدمان"
-                        data-en="Learn about addiction">
-                        تعرف على الإدمان
+                        <h3>نوبات الهلع</h3>
+
+                        <p>
+                            تعرف على أعراض نوبات الهلع والفرق بينها وبين القلق.
+                        </p>
+
+                        <span class="card-link">
+                            اعرف أكثر
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </span>
+
+                    </button>
+
+
+                    <button class="topic-card" data-topic="ocd">
+
+                        <span class="topic-number">04</span>
+
+                        <span class="topic-icon">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                        </span>
+
+                        <h3>الوسواس القهري</h3>
+
+                        <p>
+                            افهم الأفكار المتكررة والسلوكيات القهرية.
+                        </p>
+
+                        <span class="card-link">
+                            اعرف أكثر
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </span>
+
+                    </button>
+
+
+                    <button class="topic-card" data-topic="trauma">
+
+                        <span class="topic-number">05</span>
+
+                        <span class="topic-icon">
+                            <i class="fa-solid fa-feather"></i>
+                        </span>
+
+                        <h3>الصدمات النفسية</h3>
+
+                        <p>
+                            تعرف على بعض التأثيرات التي قد تظهر بعد التجارب المؤلمة.
+                        </p>
+
+                        <span class="card-link">
+                            اعرف أكثر
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </span>
+
+                    </button>
+
+
+                    <button class="topic-card" data-topic="sleep">
+
+                        <span class="topic-number">06</span>
+
+                        <span class="topic-icon">
+                            <i class="fa-regular fa-moon"></i>
+                        </span>
+
+                        <h3>النوم والصحة النفسية</h3>
+
+                        <p>
+                            افهم العلاقة بين النوم والمزاج والطاقة والتركيز.
+                        </p>
+
+                        <span class="card-link">
+                            اعرف أكثر
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </span>
+
                     </button>
 
                 </div>
 
+            </div>
 
-                <div class="quote">
+        </section>
 
-                    <span>“</span>
 
-                    <strong
-                        data-ar="طلب المساعدة ليس علامة ضعف."
-                        data-en="Asking for help is not a sign of weakness.">
-                        طلب المساعدة ليس علامة ضعف.
-                    </strong>
+        <!-- ================= ADDICTION ================= -->
 
-                    <p
-                        data-ar="الدعم المتخصص يمكن أن يساعد الشخص وأسرته على فهم المشكلة والتعامل معها."
-                        data-en="Professional support can help individuals and families understand the problem and move toward recovery.">
-                        الدعم المتخصص يمكن أن يساعد الشخص وأسرته
-                        على فهم المشكلة والتعامل معها.
-                    </p>
+        <section class="feature-section">
+
+            <div class="container">
+
+                <div class="feature-card">
+
+                    <div class="feature-content">
+
+                        <span class="section-kicker">
+                            الدعم بدون أحكام
+                        </span>
+
+                        <h2>
+                            الإدمان واستخدام المواد
+                        </h2>
+
+                        <p>
+                            طلب المساعدة ليس علامة ضعف.
+                            الإدمان قد يؤثر على الصحة والعلاقات
+                            والدراسة أو العمل والقدرة على التحكم في الاستخدام.
+                        </p>
+
+                        <ul class="feature-list">
+
+                            <li>
+                                <i class="fa-solid fa-check"></i>
+                                صعوبة التحكم في الاستخدام
+                            </li>
+
+                            <li>
+                                <i class="fa-solid fa-check"></i>
+                                استمرار الاستخدام رغم الأضرار
+                            </li>
+
+                            <li>
+                                <i class="fa-solid fa-check"></i>
+                                تأثيره على العلاقات أو العمل أو الدراسة
+                            </li>
+
+                        </ul>
+
+                        <button
+                            class="btn btn-primary"
+                            type="button"
+                            data-topic="addiction">
+
+                            تعرف على الإدمان
+                            <i class="fa-solid fa-arrow-left"></i>
+
+                        </button>
+
+                    </div>
+
+                    <div class="feature-visual">
+
+                        <div class="quote-card">
+
+                            <span class="quote-mark">"</span>
+
+                            <p>
+                                هناك دائمًا خطوة تالية.
+                            </p>
+
+                            <small>
+                                فهم المشكلة وطلب الدعم قد يكونان بداية مهمة.
+                            </small>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
@@ -512,65 +559,54 @@
         </section>
 
 
-        <!-- =========================
-             SELF ESTEEM
-        ========================== -->
-        <section class="section">
+        <!-- ================= SELF ESTEEM ================= -->
 
-            <div class="container two">
+        <section class="split-section">
 
-                <div>
+            <div class="container split-grid">
 
-                    <span
-                        class="kicker"
-                        data-ar="علاقتك بنفسك"
-                        data-en="Your relationship with yourself">
+                <div class="split-copy">
+
+                    <span class="section-kicker">
                         علاقتك بنفسك
                     </span>
 
-                    <h2
-                        data-ar="الثقة بالنفس وتقدير الذات"
-                        data-en="Self-Confidence & Self-Esteem">
+                    <h2>
                         الثقة بالنفس وتقدير الذات
                     </h2>
 
-                    <p
-                        data-ar="انخفاض تقدير الذات قد يظهر في النقد المستمر للنفس، المقارنة، الخوف من الفشل، صعوبة وضع الحدود أو الشعور بعدم الاستحقاق. هذه العلامات ليست تشخيصًا."
-                        data-en="Low self-esteem may appear as self-criticism, comparison, fear of failure, difficulty setting boundaries, or feeling undeserving. These signs are not a diagnosis.">
-                        انخفاض تقدير الذات قد يظهر في النقد المستمر للنفس،
-                        المقارنة، الخوف من الفشل، صعوبة وضع الحدود
-                        أو الشعور بعدم الاستحقاق.
-                        هذه العلامات ليست تشخيصًا.
+                    <p>
+                        كيف تنظر إلى نفسك يؤثر على كثير من اختياراتك.
+                        انخفاض تقدير الذات قد يظهر في صورة نقد مستمر للنفس،
+                        مقارنة بالآخرين، خوف من الفشل أو صعوبة في وضع الحدود.
                     </p>
 
                     <button
-                        class="text-link"
-                        type="button"
+                        class="text-link large-link"
                         data-topic="self-esteem"
-                        data-ar="استكشف الموضوع ←"
-                        data-en="Explore the topic →">
-                        استكشف الموضوع ←
+                        type="button">
+
+                        استكشف الموضوع
+                        <i class="fa-solid fa-arrow-left"></i>
+
                     </button>
 
                 </div>
 
+                <div class="self-esteem-art">
 
-                <div class="art">
+                    <div class="art-circle circle-large"></div>
+                    <div class="art-circle circle-small"></div>
 
-                    <div></div>
-                    <div></div>
+                    <div class="art-card">
 
-                    <aside>
+                        <i class="fa-regular fa-heart"></i>
 
-                        ♡
-
-                        <strong
-                            data-ar="قيمتك ليست مرتبطة بالكمال."
-                            data-en="Your worth is not tied to perfection.">
+                        <strong>
                             قيمتك ليست مرتبطة بالكمال.
                         </strong>
 
-                    </aside>
+                    </div>
 
                 </div>
 
@@ -579,102 +615,81 @@
         </section>
 
 
-        <!-- =========================
-             RELATIONSHIPS
-        ========================== -->
-        <section class="section soft">
+        <!-- ================= RELATIONSHIPS ================= -->
+
+        <section class="relationships-section section-padding">
 
             <div class="container">
 
-                <div class="heading center">
+                <div class="section-heading centered-heading">
 
-                    <span
-                        class="kicker"
-                        data-ar="العلاقات"
-                        data-en="Relationships">
+                    <span class="section-kicker">
                         العلاقات
                     </span>
 
-                    <h2
-                        data-ar="أحيانًا المشكلة ليست في الحب، بل في طريقة التواصل."
-                        data-en="Sometimes the challenge is not love, but the way we communicate.">
-                        أحيانًا المشكلة ليست في الحب،
-                        بل في طريقة التواصل.
+                    <h2>
+                        أحيانًا المشكلة ليست في الحب، بل في طريقة التواصل.
                     </h2>
 
-                    <p
-                        data-ar="افتح كل بطاقة لمعرفة المزيد عن العلاقات العاطفية، الأسرية، والتواصل والحدود."
-                        data-en="Open each card to learn about romantic relationships, family relationships, and communication and boundaries.">
-                        افتح كل بطاقة لمعرفة المزيد عن العلاقات العاطفية،
-                        الأسرية، والتواصل والحدود.
+                    <p>
+                        يمكن للدعم المتخصص أن يساعدك على فهم أنماط التواصل،
+                        الحدود، الخلافات المتكررة، الغيرة، التعلق والانفصال.
                     </p>
 
                 </div>
 
 
-                <div class="cards three">
+                <div class="relationship-grid">
 
                     <button
-                        class="info-card"
-                        type="button"
+                        class="relationship-card"
                         data-topic="relationships">
 
-                        <span>♡</span>
+                        <span class="relationship-icon">
+                            <i class="fa-solid fa-heart"></i>
+                        </span>
 
-                        <h3
-                            data-ar="العلاقات العاطفية"
-                            data-en="Romantic Relationships">
-                            العلاقات العاطفية
-                        </h3>
+                        <h3>العلاقات العاطفية</h3>
 
-                        <span
-                            data-ar="اعرف أكثر →"
-                            data-en="Learn more →">
-                            اعرف أكثر →
+                        <span class="card-link">
+                            اعرف أكثر
+                            <i class="fa-solid fa-arrow-left"></i>
                         </span>
 
                     </button>
 
 
                     <button
-                        class="info-card"
-                        type="button"
+                        class="relationship-card"
                         data-topic="family">
 
-                        <span>⌂</span>
+                        <span class="relationship-icon">
+                            <i class="fa-solid fa-house"></i>
+                        </span>
 
-                        <h3
-                            data-ar="العلاقات الأسرية"
-                            data-en="Family Relationships">
-                            العلاقات الأسرية
-                        </h3>
+                        <h3>العلاقات الأسرية</h3>
 
-                        <span
-                            data-ar="اعرف أكثر →"
-                            data-en="Learn more →">
-                            اعرف أكثر →
+                        <span class="card-link">
+                            اعرف أكثر
+                            <i class="fa-solid fa-arrow-left"></i>
                         </span>
 
                     </button>
 
 
                     <button
-                        class="info-card"
-                        type="button"
+                        class="relationship-card"
                         data-topic="communication">
 
-                        <span>☷</span>
+                        <span class="relationship-icon">
+                            <i class="fa-solid fa-comments"></i>
+                        </span>
 
-                        <h3
-                            data-ar="التواصل والحدود"
-                            data-en="Communication & Boundaries">
-                            التواصل والحدود
-                        </h3>
+                        <h3>التواصل والحدود</h3>
 
-                        <span
-                            data-ar="اعرف أكثر →"
-                            data-en="Learn more →">
-                            اعرف أكثر →
+                        <span class="card-link">
+                            اعرف أكثر
+                            <i class="fa-solid fa-arrow-left"></i>
                         </span>
 
                     </button>
@@ -686,48 +701,120 @@
         </section>
 
 
-        <!-- =========================
-             SPECIALISTS
-        ========================== -->
-        <section id="specialists" class="section">
+        <!-- ================= SPECIALISTS ================= -->
+
+        <section
+            class="specialists-section section-padding"
+            id="specialists">
 
             <div class="container">
 
-                <div class="heading">
+                <div class="section-heading">
 
                     <div>
 
-                        <span
-                            class="kicker"
-                            data-ar="مختصون"
-                            data-en="Specialists">
+                        <span class="section-kicker">
                             مختصون
                         </span>
 
-                        <h2
-                            data-ar="تعرف على المختصين المتاحين."
-                            data-en="Meet the available specialists.">
-                            تعرف على المختصين المتاحين.
+                        <h2>
+                            اختر المساحة التي تناسبك.
                         </h2>
 
                     </div>
 
-                    <button
-                        class="text-link"
-                        type="button"
-                        data-action="booking"
-                        data-ar="ابدأ الحجز ←"
-                        data-en="Start booking →">
-                        ابدأ الحجز ←
-                    </button>
-
                 </div>
 
 
-                <!-- Firebase specialists -->
-                <div
-                    id="specialistsGrid"
-                    class="specialists">
+                <div class="specialists-grid" id="specialistsGrid">
+
+                    <article class="specialist-card">
+
+                        <div class="specialist-avatar">
+                            T
+                        </div>
+
+                        <div class="specialist-content">
+
+                            <span class="specialist-label">
+                                CLINICAL PSYCHOLOGY
+                            </span>
+
+                            <h3>Tasbeh Mohamed</h3>
+
+                            <p>
+                                حاصلة على دبلومة في علم النفس الإكلينيكي،
+                                وخريجة قسم علم النفس الإكلينيكي بكلية الآداب،
+                                مع اهتمام بالصحة النفسية والعلاقات والنمو الشخصي.
+                            </p>
+
+                            <div class="specialist-actions">
+
+                                <button
+                                    class="btn btn-soft"
+                                    data-provider="tasbeh"
+                                    type="button">
+                                    عرض الملف
+                                </button>
+
+                                <button
+                                    class="btn btn-primary"
+                                    data-open-booking
+                                    data-selected-provider="Tasbeh Mohamed"
+                                    type="button">
+                                    احجز موعد
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
+
+                    <article class="specialist-card">
+
+                        <div class="specialist-avatar">
+                            M
+                        </div>
+
+                        <div class="specialist-content">
+
+                            <span class="specialist-label">
+                                CLINICAL PSYCHOLOGY
+                            </span>
+
+                            <h3>Mariam Mahmoud</h3>
+
+                            <p>
+                                حاصلة على دبلومة في علم النفس الإكلينيكي،
+                                وخريجة قسم علم النفس الإكلينيكي بكلية الآداب،
+                                مع اهتمام بالمشاعر والعلاقات والتحديات الشخصية.
+                            </p>
+
+                            <div class="specialist-actions">
+
+                                <button
+                                    class="btn btn-soft"
+                                    data-provider="mariam"
+                                    type="button">
+                                    عرض الملف
+                                </button>
+
+                                <button
+                                    class="btn btn-primary"
+                                    data-open-booking
+                                    data-selected-provider="Mariam Mahmoud"
+                                    type="button">
+                                    احجز موعد
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+
                 </div>
 
             </div>
@@ -735,204 +822,172 @@
         </section>
 
 
-        <!-- =========================
-             HOW IT WORKS
-        ========================== -->
-        <section id="how" class="section soft">
+        <!-- ================= HOW IT WORKS ================= -->
+
+        <section
+            class="how-section section-padding"
+            id="how-it-works">
 
             <div class="container">
 
-                <div class="heading center">
+                <div class="section-heading centered-heading">
 
-                    <span
-                        class="kicker"
-                        data-ar="كيف تعمل MindCare"
-                        data-en="How MindCare works">
+                    <span class="section-kicker">
                         كيف تعمل MindCare
                     </span>
 
-                    <h2
-                        data-ar="كل خطوة هنا لها وظيفة."
-                        data-en="Every step here has a purpose.">
-                        كل خطوة هنا لها وظيفة.
+                    <h2>
+                        خطوات بسيطة نحو دعم يناسبك.
                     </h2>
 
                 </div>
 
 
-                <div class="steps">
+                <div class="steps-grid">
 
-                    <button
-                        type="button"
-                        data-scroll="topics">
+                    <article class="step-card">
+                        <span class="step-number">01</span>
 
-                        <b>01</b>
-
-                        <h3
-                            data-ar="استكشف"
-                            data-en="Explore">
-                            استكشف
-                        </h3>
-
-                        <p
-                            data-ar="اقرأ عن الموضوعات والأعراض والمصادر."
-                            data-en="Learn about topics, signs, and resources.">
-                            اقرأ عن الموضوعات والأعراض والمصادر.
-                        </p>
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        data-scroll="specialists">
-
-                        <b>02</b>
-
-                        <h3
-                            data-ar="اختر المختص"
-                            data-en="Choose a specialist">
-                            اختر المختص
-                        </h3>
-
-                        <p
-                            data-ar="راجع الملف والمؤهلات قبل الحجز."
-                            data-en="Review the profile before booking.">
-                            راجع الملف والمؤهلات قبل الحجز.
-                        </p>
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        data-action="booking">
-
-                        <b>03</b>
-
-                        <h3
-                            data-ar="اختر موعدك"
-                            data-en="Choose your time">
-                            اختر موعدك
-                        </h3>
-
-                        <p
-                            data-ar="اختر أحد المواعيد التي أتاحها المختص."
-                            data-en="Choose from the available appointments.">
-                            اختر أحد المواعيد التي أتاحها المختص.
-                        </p>
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        data-action="assessment">
-
-                        <b>04</b>
-
-                        <h3
-                            data-ar="ابدأ"
-                            data-en="Start">
-                            ابدأ
-                        </h3>
-
-                        <p
-                            data-ar="ابدأ بالتقييم المبدئي أو الحجز."
-                            data-en="Start with the self-check or booking.">
-                            ابدأ بالتقييم المبدئي أو الحجز.
-                        </p>
-
-                    </button>
-
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- =========================
-             ASSESSMENT
-        ========================== -->
-        <section class="section">
-
-            <div class="container assessment">
-
-                <div>
-
-                    <span
-                        class="kicker"
-                        data-ar="تقييم مبدئي"
-                        data-en="Initial self-check">
-                        تقييم مبدئي
-                    </span>
-
-                    <h2
-                        data-ar="هل ما أشعر به يستحق أن أتحدث عنه مع مختص؟"
-                        data-en="Is what I am experiencing worth discussing with a specialist?">
-                        هل ما أشعر به يستحق أن أتحدث عنه مع مختص؟
-                    </h2>
-
-                    <p
-                        data-ar="أسئلة قصيرة للتفكير في الأعراض وتأثيرها. النتيجة ليست تشخيصًا."
-                        data-en="Short questions to reflect on symptoms and their impact. This is not a diagnosis.">
-                        أسئلة قصيرة للتفكير في الأعراض وتأثيرها.
-                        النتيجة ليست تشخيصًا.
-                    </p>
-
-                    <button
-                        class="btn btn-primary"
-                        type="button"
-                        data-action="assessment">
-
-                        <span
-                            data-ar="ابدأ التقييم"
-                            data-en="Start self-check">
-                            ابدأ التقييم
+                        <span class="step-icon">
+                            <i class="fa-solid fa-compass"></i>
                         </span>
 
-                    </button>
+                        <h3>استكشف</h3>
+
+                        <p>
+                            تعرف على الموضوعات النفسية والمجالات
+                            التي قد تكون قريبة من تجربتك.
+                        </p>
+                    </article>
+
+
+                    <article class="step-card">
+                        <span class="step-number">02</span>
+
+                        <span class="step-icon">
+                            <i class="fa-solid fa-user-check"></i>
+                        </span>
+
+                        <h3>اختر المختص</h3>
+
+                        <p>
+                            تعرف على المختصين واختر الشخص
+                            الذي يناسب احتياجك.
+                        </p>
+                    </article>
+
+
+                    <article class="step-card">
+                        <span class="step-number">03</span>
+
+                        <span class="step-icon">
+                            <i class="fa-regular fa-calendar"></i>
+                        </span>
+
+                        <h3>اختر موعدك</h3>
+
+                        <p>
+                            اختر اليوم والوقت المناسبين لك.
+                        </p>
+                    </article>
+
+
+                    <article class="step-card">
+                        <span class="step-number">04</span>
+
+                        <span class="step-icon">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </span>
+
+                        <h3>ابدأ</h3>
+
+                        <p>
+                            أكمل بيانات الحجز وابدأ خطوتك القادمة.
+                        </p>
+                    </article>
 
                 </div>
-
-
-                <div class="question-mark">?</div>
 
             </div>
 
         </section>
 
 
-        <!-- =========================
-             PRIVACY
-        ========================== -->
-        <section class="privacy">
+        <!-- ================= ASSESSMENT ================= -->
+
+        <section class="assessment-section">
 
             <div class="container">
 
-                <i class="fa-solid fa-shield-heart"></i>
+                <div class="assessment-card">
+
+                    <div class="assessment-content">
+
+                        <span class="section-kicker">
+                            تقييم مبدئي
+                        </span>
+
+                        <h2>
+                            هل ما أشعر به يستحق أن أتحدث عنه مع مختص؟
+                        </h2>
+
+                        <p>
+                            تقييم قصير يساعدك على التفكير في بعض الأعراض
+                            وتأثيرها على حياتك. هذا التقييم لا يشخّص أي مرض.
+                        </p>
+
+                        <button
+                            class="btn btn-primary"
+                            id="assessmentButton"
+                            type="button">
+
+                            ابدأ التقييم
+                            <i class="fa-solid fa-arrow-left"></i>
+
+                        </button>
+
+                    </div>
+
+                    <div class="assessment-symbol">
+
+                        <div class="assessment-ring ring-one"></div>
+                        <div class="assessment-ring ring-two"></div>
+
+                        <i class="fa-regular fa-circle-question"></i>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= PRIVACY ================= -->
+
+        <section class="privacy-section">
+
+            <div class="container privacy-grid">
+
+                <div class="privacy-icon">
+                    <i class="fa-solid fa-shield-heart"></i>
+                </div>
 
                 <div>
 
-                    <span
-                        class="kicker"
-                        data-ar="الخصوصية أولًا"
-                        data-en="Privacy first">
+                    <span class="section-kicker">
                         الخصوصية أولًا
                     </span>
 
-                    <h2
-                        data-ar="مساحتك الشخصية تستحق الاحترام."
-                        data-en="Your personal space deserves respect.">
+                    <h2>
                         مساحتك الشخصية تستحق الاحترام.
                     </h2>
 
-                    <p
-                        data-ar="لا تعتبر MindCare المحتوى أو التقييم المبدئي تشخيصًا. شارك فقط المعلومات الضرورية في الحجز."
-                        data-en="MindCare does not treat educational content or the self-check as a diagnosis. Share only information necessary for booking.">
-                        لا تعتبر MindCare المحتوى أو التقييم المبدئي تشخيصًا.
-                        شارك فقط المعلومات الضرورية في الحجز.
+                    <p>
+                        لا تشارك معلومات حساسة إلا عندما تكون ضرورية
+                        ولدى جهة تثق بها، واقرأ سياسة الخصوصية قبل إرسال
+                        أي بيانات شخصية.
                     </p>
 
                 </div>
@@ -942,104 +997,193 @@
         </section>
 
 
-        <!-- =========================
-             FAQ
-        ========================== -->
-        <section id="faq" class="section">
+        <!-- ================= FAQ ================= -->
 
-            <div class="container faq">
+        <section
+            class="faq-section section-padding"
+            id="faq">
 
-                <div>
+            <div class="container faq-grid">
 
-                    <span
-                        class="kicker"
-                        data-ar="أسئلة قد تكون في بالك"
-                        data-en="Questions you may have">
-                        أسئلة قد تكون في بالك
+                <div class="faq-intro">
+
+                    <span class="section-kicker">
+                        أسئلة شائعة
                     </span>
 
-                    <h2
-                        data-ar="هنا الإجابة، وليست مجرد ديكور."
-                        data-en="Real answers, not decoration.">
-                        هنا الإجابة، وليست مجرد ديكور.
+                    <h2>
+                        كل ما تحتاج معرفته قبل أن تبدأ.
                     </h2>
 
-                    <p
-                        data-ar="اضغط على أي سؤال لفتح الإجابة."
-                        data-en="Open any question to see the answer.">
-                        اضغط على أي سؤال لفتح الإجابة.
+                    <p>
+                        اضغط على أي سؤال لعرض الإجابة.
                     </p>
 
                 </div>
 
 
-                <!-- Generated by script.js -->
-                <div id="faqList"></div>
+                <div class="faq-list">
+
+                    <div class="faq-item">
+
+                        <button
+                            class="faq-question"
+                            type="button">
+
+                            <span>
+                                هل الموقع يشخّص الأمراض النفسية؟
+                            </span>
+
+                            <i class="fa-solid fa-plus"></i>
+
+                        </button>
+
+                        <div class="faq-answer">
+
+                            <p>
+                                لا. المحتوى الموجود هنا للتثقيف وفهم بعض
+                                العلامات المحتملة، ولا يحل محل التقييم المهني
+                                أو التشخيص من مختص مؤهل.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="faq-item">
+
+                        <button
+                            class="faq-question"
+                            type="button">
+
+                            <span>
+                                كيف أعرف أن الأعراض تستحق طلب المساعدة؟
+                            </span>
+
+                            <i class="fa-solid fa-plus"></i>
+
+                        </button>
+
+                        <div class="faq-answer">
+
+                            <p>
+                                إذا أصبحت الأعراض مستمرة أو شديدة أو بدأت
+                                تؤثر على الدراسة أو العمل أو النوم أو العلاقات
+                                أو قدرتك على أداء حياتك اليومية، فقد يكون
+                                التحدث مع مختص خطوة مناسبة.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="faq-item">
+
+                        <button
+                            class="faq-question"
+                            type="button">
+
+                            <span>
+                                هل وجود عرض واحد يعني أنني مصاب بمرض؟
+                            </span>
+
+                            <i class="fa-solid fa-plus"></i>
+
+                        </button>
+
+                        <div class="faq-answer">
+
+                            <p>
+                                ليس بالضرورة. أعراض كثيرة يمكن أن تظهر بسبب
+                                الضغط أو قلة النوم أو ظروف حياتية مختلفة،
+                                ولذلك التشخيص يحتاج إلى تقييم متخصص وليس
+                                إلى عرض منفرد.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="faq-item">
+
+                        <button
+                            class="faq-question"
+                            type="button">
+
+                            <span>
+                                ماذا لو كنت في خطر فوري؟
+                            </span>
+
+                            <i class="fa-solid fa-plus"></i>
+
+                        </button>
+
+                        <div class="faq-answer">
+
+                            <p>
+                                إذا كنت في خطر فوري أو تخشى أن تؤذي نفسك
+                                أو شخصًا آخر، لا تعتمد على الموقع أو نظام
+                                الحجز. تواصل فورًا مع خدمات الطوارئ المحلية
+                                أو توجه إلى أقرب قسم طوارئ.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
 
         </section>
 
 
-        <!-- =========================
-             FINAL CTA
-        ========================== -->
-        <section class="final">
+        <!-- ================= FINAL CTA ================= -->
+
+        <section class="final-cta">
 
             <div class="container">
 
-                <div>
+                <div class="final-cta-card">
 
-                    <span
-                        class="kicker"
-                        data-ar="خطوتك القادمة"
-                        data-en="Your next step">
-                        خطوتك القادمة
-                    </span>
+                    <div>
 
-                    <h2
-                        data-ar="ابدأ عندما تكون مستعدًا."
-                        data-en="Start when you are ready.">
-                        ابدأ عندما تكون مستعدًا.
-                    </h2>
+                        <span class="section-kicker">
+                            خطوتك القادمة
+                        </span>
 
-                    <p
-                        data-ar="لا تحتاج إلى معرفة كل الإجابات قبل طلب الدعم."
-                        data-en="You do not need all the answers before asking for support.">
-                        لا تحتاج إلى معرفة كل الإجابات قبل طلب الدعم.
-                    </p>
+                        <h2>
+                            ابدأ عندما تكون مستعدًا.
+                        </h2>
 
-                </div>
+                        <p>
+                            لا تحتاج إلى معرفة كل الإجابات قبل طلب الدعم.
+                        </p>
 
+                    </div>
 
-                <div class="actions">
+                    <div class="final-actions">
 
-                    <button
-                        class="btn btn-primary"
-                        type="button"
-                        data-action="booking">
+                        <button
+                            class="btn btn-primary"
+                            data-open-booking
+                            type="button">
 
-                        <span
-                            data-ar="ابدأ الحجز"
-                            data-en="Book a Session">
                             ابدأ الحجز
-                        </span>
+                            <i class="fa-solid fa-arrow-left"></i>
 
-                    </button>
+                        </button>
 
-
-                    <button
-                        class="btn btn-light"
-                        type="button"
-                        data-scroll="specialists">
-
-                        <span
-                            data-ar="استكشف المختصين"
-                            data-en="Explore Specialists">
+                        <a
+                            href="#specialists"
+                            class="btn btn-light">
                             استكشف المختصين
-                        </span>
+                        </a>
 
-                    </button>
+                    </div>
 
                 </div>
 
@@ -1050,176 +1194,403 @@
     </main>
 
 
-    <!-- =========================
-         FOOTER
-    ========================== -->
-    <footer>
+    <!-- ================= FOOTER ================= -->
 
-        <div class="container footer-grid">
+    <footer class="site-footer">
 
-            <div>
+        <div class="container">
 
-                <a
-                    class="brand"
-                    href="#home"
-                    data-scroll="home">
+            <div class="footer-grid">
 
-                    <span class="brand-mark">
-                        <i class="fa-solid fa-leaf"></i>
-                    </span>
+                <div class="footer-brand">
 
-                    <span class="brand-text">
-                        <strong>MindCare</strong>
-                        <small>Mental Wellness</small>
-                    </span>
+                    <div class="brand footer-logo">
 
-                </a>
+                        <span class="brand-mark">
+                            <i class="fa-solid fa-leaf"></i>
+                        </span>
 
-                <p
-                    data-ar="منصة مصممة لمساعدتك على فهم الصحة النفسية والوصول إلى مساحة مناسبة للدعم."
-                    data-en="A platform designed to help you understand mental health and find an appropriate space for support.">
-                    منصة مصممة لمساعدتك على فهم الصحة النفسية
-                    والوصول إلى مساحة مناسبة للدعم.
+                        <span class="brand-text">
+                            <strong>MindCare</strong>
+                            <small>Mental Wellness</small>
+                        </span>
+
+                    </div>
+
+                    <p>
+                        مساحة هادئة لفهم الصحة النفسية
+                        والوصول إلى الدعم المناسب.
+                    </p>
+
+                </div>
+
+
+                <div class="footer-column">
+
+                    <h3>روابط</h3>
+
+                    <a href="#specialists">المختصون</a>
+                    <a href="#topics">الموضوعات</a>
+                    <a href="#faq">الأسئلة الشائعة</a>
+
+                </div>
+
+
+                <div class="footer-column">
+
+                    <h3>الموضوعات</h3>
+
+                    <button data-topic="anxiety">
+                        القلق
+                    </button>
+
+                    <button data-topic="depression">
+                        الاكتئاب
+                    </button>
+
+                    <button data-topic="addiction">
+                        الإدمان
+                    </button>
+
+                    <button data-topic="self-esteem">
+                        الثقة بالنفس
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="footer-bottom">
+
+                <p>
+                    © 2026 MindCare. All rights reserved.
+                </p>
+
+                <p>
+                    Prepared By: Eng Ahmad Ramadan
                 </p>
 
             </div>
-
-
-            <div>
-
-                <h4
-                    data-ar="روابط"
-                    data-en="Links">
-                    روابط
-                </h4>
-
-                <button
-                    type="button"
-                    data-scroll="specialists"
-                    data-ar="المختصون"
-                    data-en="Specialists">
-                    المختصون
-                </button>
-
-                <button
-                    type="button"
-                    data-action="booking"
-                    data-ar="الحجز"
-                    data-en="Booking">
-                    الحجز
-                </button>
-
-                <button
-                    type="button"
-                    data-action="assessment"
-                    data-ar="التقييم المبدئي"
-                    data-en="Self-check">
-                    التقييم المبدئي
-                </button>
-
-                <button
-                    type="button"
-                    data-scroll="faq"
-                    data-ar="الأسئلة الشائعة"
-                    data-en="FAQ">
-                    الأسئلة الشائعة
-                </button>
-
-            </div>
-
-
-            <div>
-
-                <h4
-                    data-ar="الموضوعات"
-                    data-en="Topics">
-                    الموضوعات
-                </h4>
-
-                <button
-                    type="button"
-                    data-topic="anxiety"
-                    data-ar="القلق"
-                    data-en="Anxiety">
-                    القلق
-                </button>
-
-                <button
-                    type="button"
-                    data-topic="depression"
-                    data-ar="الاكتئاب"
-                    data-en="Depression">
-                    الاكتئاب
-                </button>
-
-                <button
-                    type="button"
-                    data-topic="addiction"
-                    data-ar="الإدمان"
-                    data-en="Addiction">
-                    الإدمان
-                </button>
-
-                <button
-                    type="button"
-                    data-topic="self-esteem"
-                    data-ar="الثقة بالنفس"
-                    data-en="Self-esteem">
-                    الثقة بالنفس
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <div class="container footer-bottom">
-
-            <span>
-                © 2026 MindCare. All rights reserved.
-            </span>
-
-            <span>
-                Prepared By: Eng Ahmad Ramadan
-            </span>
 
         </div>
 
     </footer>
 
 
-    <!-- =========================
-         MODAL
-    ========================== -->
+    <!-- ================= TOPIC MODAL ================= -->
+
     <div
-        id="modalOverlay"
-        class="modal-overlay"
+        class="modal"
+        id="topicModal"
         aria-hidden="true">
 
         <div
-            class="modal"
+            class="modal-overlay"
+            data-close-modal>
+        </div>
+
+        <div
+            class="modal-box topic-modal-box"
             role="dialog"
-            aria-modal="true"
-            aria-labelledby="modalContent">
+            aria-modal="true">
 
             <button
-                id="modalClose"
                 class="modal-close"
                 type="button"
-                aria-label="Close">
-                ×
+                data-close-modal
+                aria-label="إغلاق">
+
+                <i class="fa-solid fa-xmark"></i>
+
             </button>
 
-            <div id="modalContent"></div>
+            <div id="topicModalContent"></div>
 
         </div>
 
     </div>
 
 
-    <!-- =========================
-         SCRIPT
-    ========================== -->
+    <!-- ================= PROVIDER MODAL ================= -->
+
+    <div
+        class="modal"
+        id="providerModal"
+        aria-hidden="true">
+
+        <div
+            class="modal-overlay"
+            data-close-modal>
+        </div>
+
+        <div
+            class="modal-box"
+            role="dialog"
+            aria-modal="true">
+
+            <button
+                class="modal-close"
+                type="button"
+                data-close-modal
+                aria-label="إغلاق">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+            <div id="providerModalContent"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= BOOKING MODAL ================= -->
+
+    <div
+        class="modal"
+        id="bookingModal"
+        aria-hidden="true">
+
+        <div
+            class="modal-overlay"
+            data-close-modal>
+        </div>
+
+        <div
+            class="modal-box booking-box"
+            role="dialog"
+            aria-modal="true">
+
+            <button
+                class="modal-close"
+                type="button"
+                data-close-modal
+                aria-label="إغلاق">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+            <span class="section-kicker">
+                حجز موعد
+            </span>
+
+            <h2>
+                ابدأ خطوتك القادمة
+            </h2>
+
+            <p class="modal-intro">
+                اختر المختص والموعد المتاح ثم أكمل بيانات الحجز.
+            </p>
+
+            <form id="bookingForm">
+
+                <div class="form-group">
+
+                    <label for="bookingName">
+                        الاسم
+                    </label>
+
+                    <input
+                        id="bookingName"
+                        name="name"
+                        type="text"
+                        autocomplete="name"
+                        required
+                        placeholder="اكتب اسمك">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="bookingPhone">
+                        رقم الهاتف
+                    </label>
+
+                    <input
+                        id="bookingPhone"
+                        name="phone"
+                        type="tel"
+                        autocomplete="tel"
+                        required
+                        placeholder="01xxxxxxxxx">
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="bookingProvider">
+                        المختص
+                    </label>
+
+                    <select
+                        id="bookingProvider"
+                        name="provider"
+                        required>
+
+                        <option value="">
+                            اختر المختص
+                        </option>
+
+                        <option value="Tasbeh Mohamed">
+                            Tasbeh Mohamed
+                        </option>
+
+                        <option value="Mariam Mahmoud">
+                            Mariam Mahmoud
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="bookingDate">
+                        التاريخ
+                    </label>
+
+                    <input
+                        id="bookingDate"
+                        name="date"
+                        type="date"
+                        required>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="bookingSlot">
+                        الموعد المتاح
+                    </label>
+
+                    <select
+                        id="bookingSlot"
+                        name="slotId"
+                        required
+                        disabled>
+
+                        <option value="">
+                            اختر المختص والتاريخ أولًا
+                        </option>
+
+                    </select>
+
+                    <small
+                        id="slotStatus"
+                        class="field-hint">
+                    </small>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="bookingMessage">
+                        ملاحظة اختيارية
+                    </label>
+
+                    <textarea
+                        id="bookingMessage"
+                        name="message"
+                        rows="4"
+                        maxlength="1000"
+                        placeholder="اكتب أي ملاحظة تريد مشاركتها..."></textarea>
+
+                </div>
+
+
+                <button
+                    class="btn btn-primary full-width"
+                    type="submit"
+                    id="bookingSubmit">
+
+                    إرسال طلب الحجز
+
+                    <i class="fa-solid fa-arrow-left"></i>
+
+                </button>
+
+            </form>
+
+            <div
+                id="bookingSuccess"
+                class="success-message">
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= ASSESSMENT MODAL ================= -->
+
+    <div
+        class="modal"
+        id="assessmentModal"
+        aria-hidden="true">
+
+        <div
+            class="modal-overlay"
+            data-close-modal>
+        </div>
+
+        <div
+            class="modal-box assessment-box"
+            role="dialog"
+            aria-modal="true">
+
+            <button
+                class="modal-close"
+                type="button"
+                data-close-modal
+                aria-label="إغلاق">
+
+                <i class="fa-solid fa-xmark"></i>
+
+            </button>
+
+            <span class="section-kicker">
+                تقييم مبدئي
+            </span>
+
+            <h2>
+                أسئلة تساعدك على التفكير
+            </h2>
+
+            <p>
+                هذا ليس اختبارًا تشخيصيًا. أجب فقط بناءً على
+                الفترة الأخيرة من حياتك.
+            </p>
+
+            <div id="assessmentQuestions"></div>
+
+            <button
+                class="btn btn-primary full-width"
+                id="calculateAssessment"
+                type="button">
+
+                عرض النتيجة
+
+            </button>
+
+            <div id="assessmentResult"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Firebase configuration if available -->
+    <script src="firebase-config.js"></script>
+
+    <!-- Main application -->
     <script src="script.js"></script>
 
 </body>
