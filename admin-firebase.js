@@ -1,19 +1,19 @@
 /* =========================================================
-   MindCare Admin
-   Firebase Firestore + Authentication
-   Prepared By Eng Ahmad Ramadan
+   MINDCARE ADMIN DASHBOARD
+   Firebase Authentication + Firestore
+   No WhatsApp integration
 ========================================================= */
 
-import {
-    initializeApp
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+import { initializeApp } from
+    "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 
 import {
     getAuth,
     onAuthStateChanged,
     signInWithEmailAndPassword,
     signOut
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+} from
+    "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
 import {
     getFirestore,
@@ -21,17 +21,15 @@ import {
     doc,
     addDoc,
     setDoc,
-    getDoc,
-    getDocs,
     updateDoc,
     deleteDoc,
     query,
     orderBy,
-    where,
     onSnapshot,
     serverTimestamp,
     writeBatch
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+} from
+    "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 
 /* =========================================================
@@ -42,7 +40,7 @@ const firebaseConfig = window.MINDCARE_FIREBASE_CONFIG;
 
 if (!firebaseConfig) {
     throw new Error(
-        "Firebase configuration not found. Check firebase-config.js"
+        "Firebase configuration was not found. Check firebase-config.js"
     );
 }
 
@@ -56,38 +54,86 @@ const db = getFirestore(app);
    ADMIN UID
 ========================================================= */
 
-const ADMIN_UID =
-    "70WNrO5zubWwSxegfpSPRkCIfhw1";
+const ADMIN_UID = "70WNrO5zubWwSxegfpSPRkCIfhw1";
 
 
 /* =========================================================
-   STATE
+   DOM
 ========================================================= */
+
+const login = document.getElementById("login");
+const appPanel = document.getElementById("app");
+
+const loginForm = document.getElementById("loginForm");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("pass");
+const loginErr = document.getElementById("loginErr");
+
+const logoutBtn = document.getElementById("logout");
+
+const bookingCount = document.getElementById("bookingCount");
+const pendingCount = document.getElementById("pendingCount");
+const slotCount = document.getElementById("slotCount");
+const topicCount = document.getElementById("topicCount");
+
+const bookRows = document.getElementById("bookRows");
+const slotRows = document.getElementById("slotRows");
+
+const slotForm = document.getElementById("slotForm");
+const sProv = document.getElementById("sProv");
+const sDate = document.getElementById("sDate");
+const sTimes = document.getElementById("sTimes");
+const slotMsg = document.getElementById("slotMsg");
+
+const topicForm = document.getElementById("topicForm");
+const tKey = document.getElementById("tKey");
+const tTitle = document.getElementById("tTitle");
+const tTitleEn = document.getElementById("tTitleEn");
+const tIntro = document.getElementById("tIntro");
+const tIntroEn = document.getElementById("tIntroEn");
+const tSymptoms = document.getElementById("tSymptoms");
+const topicMsg = document.getElementById("topicMsg");
+const topicsList = document.getElementById("topicsList");
+
+const providerForm = document.getElementById("providerForm");
+const providerName = document.getElementById("providerName");
+const providerNameEn = document.getElementById("providerNameEn");
+const providerSpecialtyAr = document.getElementById("providerSpecialtyAr");
+const providerSpecialtyEn = document.getElementById("providerSpecialtyEn");
+const providerBioAr = document.getElementById("providerBioAr");
+const providerBioEn = document.getElementById("providerBioEn");
+const providerMsg = document.getElementById("providerMsg");
+const providersList = document.getElementById("providersList");
+
+const notificationBox = document.getElementById("notification");
+const notificationTitle = document.getElementById("notificationTitle");
+const notificationBody = document.getElementById("notificationBody");
+
+const enableNotifications =
+    document.getElementById("enableNotifications");
+
+
+/* =========================================================
+   LOCAL STATE
+========================================================= */
+
+let bookingsCache = [];
+let slotsCache = [];
+let topicsCache = [];
+let providersCache = [];
 
 let unsubscribeBookings = null;
 let unsubscribeSlots = null;
 let unsubscribeTopics = null;
 let unsubscribeProviders = null;
 
-let providersCache = [];
-let topicsCache = [];
-let bookingsCache = [];
-let slotsCache = [];
-
-let firstBookingSnapshot = true;
-
 
 /* =========================================================
-   DOM HELPERS
+   HELPERS
 ========================================================= */
 
-const $ = id =>
-    document.getElementById(id);
-
-
-function escapeHTML(value) {
-
-    return String(value ?? "")
+function escapeHTML(value = "") {
+    return String(value)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -96,36 +142,65 @@ function escapeHTML(value) {
 }
 
 
-function showMessage(id, message, type = "note") {
-
-    const element = $(id);
-
-    if (!element) return;
-
-    element.textContent = message;
-
-    element.className =
-        type === "error"
-            ? "err"
-            : type === "success"
-                ? "success"
-                : "note";
+function showElement(element) {
+    if (element) {
+        element.style.display = "";
+    }
 }
 
 
-function requireAdmin() {
-
-    const user = auth.currentUser;
-
-    if (!user) {
-        throw new Error("NOT_AUTHENTICATED");
+function hideElement(element) {
+    if (element) {
+        element.style.display = "none";
     }
+}
 
-    if (user.uid !== ADMIN_UID) {
-        throw new Error("NOT_ADMIN");
+
+function showMessage(element, message, type = "success") {
+    if (!element) return;
+
+    element.textContent = message;
+    element.className = `msg ${type}`;
+    element.style.display = "block";
+
+    setTimeout(() => {
+        element.style.display = "none";
+    }, 3500);
+}
+
+
+function formatTimestamp(timestamp) {
+    if (!timestamp) return "—";
+
+    try {
+        if (typeof timestamp.toDate === "function") {
+            return timestamp.toDate().toLocaleString("ar-EG");
+        }
+
+        return new Date(timestamp).toLocaleString("ar-EG");
+    } catch {
+        return "—";
     }
+}
 
-    return user;
+
+function todayString() {
+    const date = new Date();
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+
+
+function normalizeKey(value) {
+    return String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^\w\u0600-\u06FF-]/g, "");
 }
 
 
@@ -133,144 +208,107 @@ function requireAdmin() {
    AUTHENTICATION
 ========================================================= */
 
-const loginForm =
-    $("loginForm");
+onAuthStateChanged(auth, async (user) => {
 
+    if (!user) {
+        showElement(login);
+        hideElement(appPanel);
+
+        stopListeners();
+
+        return;
+    }
+
+
+    if (user.uid !== ADMIN_UID) {
+
+        await signOut(auth);
+
+        showElement(login);
+        hideElement(appPanel);
+
+        if (loginErr) {
+            loginErr.textContent =
+                "هذا الحساب ليس لديه صلاحية الدخول إلى لوحة الإدارة.";
+
+            loginErr.style.display = "block";
+        }
+
+        return;
+    }
+
+
+    hideElement(login);
+    showElement(appPanel);
+
+    startListeners();
+});
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
 
 if (loginForm) {
 
-    loginForm.addEventListener(
-        "submit",
-        async event => {
+    loginForm.addEventListener("submit", async (event) => {
 
-            event.preventDefault();
+        event.preventDefault();
 
-            const email =
-                $("email")?.value.trim();
-
-            const password =
-                $("pass")?.value;
-
-
-            const errorElement =
-                $("loginErr");
-
-
-            if (!email || !password) {
-
-                if (errorElement) {
-                    errorElement.textContent =
-                        "أدخل البريد الإلكتروني وكلمة المرور.";
-                }
-
-                return;
-            }
-
-
-            try {
-
-                await signInWithEmailAndPassword(
-                    auth,
-                    email,
-                    password
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Login error:",
-                    error
-                );
-
-                if (errorElement) {
-
-                    errorElement.textContent =
-                        "بيانات الدخول غير صحيحة أو حدث خطأ.";
-                }
-            }
+        if (loginErr) {
+            loginErr.style.display = "none";
         }
-    );
-}
 
+        const email = emailInput?.value.trim();
+        const password = passwordInput?.value;
 
-/* =========================================================
-   AUTH STATE
-========================================================= */
+        if (!email || !password) {
 
-onAuthStateChanged(
-    auth,
-    user => {
+            if (loginErr) {
+                loginErr.textContent =
+                    "اكتب البريد الإلكتروني وكلمة المرور.";
 
-        if (!user) {
-
-            showLogin();
+                loginErr.style.display = "block";
+            }
 
             return;
         }
 
 
-        if (user.uid !== ADMIN_UID) {
+        try {
 
-            signOut(auth);
-
-            alert(
-                "هذا الحساب ليس حساب الإدارة."
+            await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
             );
 
-            return;
+        } catch (error) {
+
+            console.error("Login error:", error);
+
+            let message = "حدث خطأ أثناء تسجيل الدخول.";
+
+            if (
+                error.code === "auth/invalid-credential" ||
+                error.code === "auth/wrong-password" ||
+                error.code === "auth/user-not-found"
+            ) {
+                message =
+                    "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+            }
+
+            if (error.code === "auth/too-many-requests") {
+                message =
+                    "تمت محاولات كثيرة. حاول مرة أخرى بعد قليل.";
+            }
+
+            if (loginErr) {
+                loginErr.textContent = message;
+                loginErr.style.display = "block";
+            }
         }
-
-
-        showAdmin();
-
-        startRealtimeListeners();
-
-        window.dispatchEvent(
-            new CustomEvent(
-                "mindcare-admin-ready"
-            )
-        );
-    }
-);
-
-
-/* =========================================================
-   LOGIN / APP DISPLAY
-========================================================= */
-
-function showLogin() {
-
-    const login =
-        $("login");
-
-    const app =
-        $("app");
-
-    if (login) {
-        login.hidden = false;
-    }
-
-    if (app) {
-        app.hidden = true;
-    }
-}
-
-
-function showAdmin() {
-
-    const login =
-        $("login");
-
-    const app =
-        $("app");
-
-    if (login) {
-        login.hidden = true;
-    }
-
-    if (app) {
-        app.hidden = false;
-    }
+    });
 }
 
 
@@ -278,38 +316,196 @@ function showAdmin() {
    LOGOUT
 ========================================================= */
 
-$("logout")?.addEventListener(
-    "click",
-    async () => {
+if (logoutBtn) {
+
+    logoutBtn.addEventListener("click", async () => {
 
         try {
-
             await signOut(auth);
-
         } catch (error) {
-
-            console.error(
-                "Logout error:",
-                error
-            );
+            console.error("Logout error:", error);
         }
-    }
-);
+
+    });
+}
 
 
 /* =========================================================
    REALTIME LISTENERS
 ========================================================= */
 
-function startRealtimeListeners() {
+function startListeners() {
 
-    listenBookings();
+    stopListeners();
 
-    listenSlots();
 
-    listenTopics();
+    /* -----------------------------------------------------
+       BOOKINGS
+    ----------------------------------------------------- */
 
-    listenProviders();
+    const bookingsQuery = query(
+        collection(db, "bookings"),
+        orderBy("createdAt", "desc")
+    );
+
+    unsubscribeBookings = onSnapshot(
+        bookingsQuery,
+        (snapshot) => {
+
+            bookingsCache = snapshot.docs.map(item => ({
+                id: item.id,
+                ...item.data()
+            }));
+
+            renderBookings();
+            updateStats();
+        },
+
+        (error) => {
+            console.error("Bookings listener error:", error);
+        }
+    );
+
+
+    /* -----------------------------------------------------
+       SLOTS
+    ----------------------------------------------------- */
+
+    unsubscribeSlots = onSnapshot(
+        collection(db, "slots"),
+        (snapshot) => {
+
+            slotsCache = snapshot.docs.map(item => ({
+                id: item.id,
+                ...item.data()
+            }));
+
+            renderSlots();
+            updateStats();
+            populateProviderSelect();
+        },
+
+        (error) => {
+            console.error("Slots listener error:", error);
+        }
+    );
+
+
+    /* -----------------------------------------------------
+       TOPICS
+    ----------------------------------------------------- */
+
+    unsubscribeTopics = onSnapshot(
+        collection(db, "topics"),
+        (snapshot) => {
+
+            topicsCache = snapshot.docs.map(item => ({
+                id: item.id,
+                ...item.data()
+            }));
+
+            topicsCache.sort((a, b) =>
+                String(a.titleAr || "").localeCompare(
+                    String(b.titleAr || ""),
+                    "ar"
+                )
+            );
+
+            renderTopics();
+            updateStats();
+        },
+
+        (error) => {
+            console.error("Topics listener error:", error);
+        }
+    );
+
+
+    /* -----------------------------------------------------
+       PROVIDERS
+    ----------------------------------------------------- */
+
+    unsubscribeProviders = onSnapshot(
+        collection(db, "providers"),
+        (snapshot) => {
+
+            providersCache = snapshot.docs.map(item => ({
+                id: item.id,
+                ...item.data()
+            }));
+
+            providersCache.sort((a, b) =>
+                String(a.nameAr || "").localeCompare(
+                    String(b.nameAr || ""),
+                    "ar"
+                )
+            );
+
+            renderProviders();
+            populateProviderSelect();
+        },
+
+        (error) => {
+            console.error("Providers listener error:", error);
+        }
+    );
+}
+
+
+function stopListeners() {
+
+    if (unsubscribeBookings) {
+        unsubscribeBookings();
+        unsubscribeBookings = null;
+    }
+
+    if (unsubscribeSlots) {
+        unsubscribeSlots();
+        unsubscribeSlots = null;
+    }
+
+    if (unsubscribeTopics) {
+        unsubscribeTopics();
+        unsubscribeTopics = null;
+    }
+
+    if (unsubscribeProviders) {
+        unsubscribeProviders();
+        unsubscribeProviders = null;
+    }
+}
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+function updateStats() {
+
+    const pending = bookingsCache.filter(
+        booking =>
+            !booking.status ||
+            booking.status === "pending"
+    ).length;
+
+
+    if (bookingCount) {
+        bookingCount.textContent = bookingsCache.length;
+    }
+
+    if (pendingCount) {
+        pendingCount.textContent = pending;
+    }
+
+    if (slotCount) {
+        slotCount.textContent =
+            slotsCache.filter(slot => !slot.booked).length;
+    }
+
+    if (topicCount) {
+        topicCount.textContent =
+            topicsCache.filter(topic => topic.active !== false).length;
+    }
 }
 
 
@@ -317,92 +513,16 @@ function startRealtimeListeners() {
    BOOKINGS
 ========================================================= */
 
-function listenBookings() {
-
-    if (unsubscribeBookings) {
-        unsubscribeBookings();
-    }
-
-
-    const bookingsQuery =
-        query(
-            collection(db, "bookings"),
-            orderBy(
-                "createdAt",
-                "desc"
-            )
-        );
-
-
-    unsubscribeBookings =
-        onSnapshot(
-            bookingsQuery,
-            snapshot => {
-
-                bookingsCache =
-                    snapshot.docs.map(
-                        item => ({
-                            id: item.id,
-                            ...item.data()
-                        })
-                    );
-
-
-                renderBookings();
-
-                updateBookingStats();
-
-
-                if (!firstBookingSnapshot) {
-
-                    snapshot.docChanges()
-                        .forEach(change => {
-
-                            if (
-                                change.type ===
-                                "added"
-                            ) {
-
-                                notifyNewBooking({
-                                    id:
-                                        change.doc.id,
-                                    ...change.doc.data()
-                                });
-                            }
-                        });
-                }
-
-
-                firstBookingSnapshot = false;
-            },
-
-            error => {
-
-                console.error(
-                    "Bookings listener error:",
-                    error
-                );
-            }
-        );
-}
-
-
 function renderBookings() {
 
-    const tbody =
-        $("bookRows");
-
-    if (!tbody) return;
-
+    if (!bookRows) return;
 
     if (!bookingsCache.length) {
 
-        tbody.innerHTML = `
+        bookRows.innerHTML = `
             <tr>
-                <td
-                    colspan="7"
-                    class="empty">
-                    لا توجد حجوزات حاليًا.
+                <td colspan="8">
+                    لا توجد حجوزات حتى الآن.
                 </td>
             </tr>
         `;
@@ -411,707 +531,273 @@ function renderBookings() {
     }
 
 
-    tbody.innerHTML =
-        bookingsCache.map(
-            booking => {
+    bookRows.innerHTML = bookingsCache.map(booking => {
 
-                const status =
-                    booking.status ||
-                    "pending";
+        const status =
+            booking.status || "pending";
 
+        let statusText = "في الانتظار";
 
-                return `
-                    <tr>
+        if (status === "confirmed") {
+            statusText = "مؤكد";
+        }
 
-                        <td>
-                            <strong>
-                                ${escapeHTML(
-                                    booking.id
-                                )}
-                            </strong>
-
-                            <br>
-
-                            <small>
-                                ${formatDateTime(
-                                    booking.createdAt
-                                )}
-                            </small>
-                        </td>
-
-                        <td>
-                            ${escapeHTML(
-                                booking.name
-                            )}
-                        </td>
-
-                        <td dir="ltr">
-                            ${escapeHTML(
-                                booking.phone
-                            )}
-                        </td>
-
-                        <td>
-                            ${escapeHTML(
-                                booking.provider ||
-                                "—"
-                            )}
-                        </td>
-
-                        <td dir="ltr">
-                            ${escapeHTML(
-                                booking.date ||
-                                "—"
-                            )}
-
-                            <br>
-
-                            ${escapeHTML(
-                                booking.time ||
-                                "—"
-                            )}
-                        </td>
-
-                        <td>
-
-                            <span class="badge ${getStatusClass(
-                                status
-                            )}">
-
-                                ${getStatusLabel(
-                                    status
-                                )}
-
-                            </span>
-
-                        </td>
-
-                        <td>
-
-                            <div class="acts">
-
-                                ${
-                                    status !==
-                                    "confirmed"
-                                        ? `
-                                            <button
-                                                class="btn btn-soft mini"
-                                                data-action="confirm-booking"
-                                                data-id="${escapeHTML(
-                                                    booking.id
-                                                )}">
-                                                تأكيد
-                                            </button>
-                                        `
-                                        : ""
-                                }
+        if (status === "cancelled") {
+            statusText = "ملغي";
+        }
 
 
-                                ${
-                                    status !==
-                                    "cancelled"
-                                        ? `
-                                            <button
-                                                class="btn btn-outline mini"
-                                                data-action="cancel-booking"
-                                                data-id="${escapeHTML(
-                                                    booking.id
-                                                )}">
-                                                إلغاء
-                                            </button>
-                                        `
-                                        : ""
-                                }
+        return `
+            <tr>
 
+                <td>
+                    ${escapeHTML(booking.name || "—")}
+                </td>
 
+                <td>
+                    ${escapeHTML(booking.phone || "—")}
+                </td>
+
+                <td>
+                    ${escapeHTML(booking.provider || "—")}
+                </td>
+
+                <td>
+                    ${escapeHTML(booking.date || "—")}
+                </td>
+
+                <td>
+                    ${escapeHTML(booking.time || "—")}
+                </td>
+
+                <td>
+                    ${escapeHTML(booking.message || "—")}
+                </td>
+
+                <td>
+                    <span class="status status-${escapeHTML(status)}">
+                        ${statusText}
+                    </span>
+                </td>
+
+                <td>
+                    <div class="actions">
+
+                        ${
+                            status === "pending"
+                                ? `
                                 <button
-                                    class="btn btn-soft mini"
-                                    data-action="whatsapp"
-                                    data-id="${escapeHTML(
-                                        booking.id
-                                    )}">
-                                    WhatsApp
+                                    class="btn small"
+                                    onclick="confirmBooking('${booking.id}')">
+                                    تأكيد
                                 </button>
+                                `
+                                : ""
+                        }
 
-
+                        ${
+                            status !== "cancelled"
+                                ? `
                                 <button
-                                    class="btn btn-outline mini"
-                                    data-action="delete-booking"
-                                    data-id="${escapeHTML(
-                                        booking.id
-                                    )}">
-                                    حذف
+                                    class="btn small danger"
+                                    onclick="cancelBooking('${booking.id}')">
+                                    إلغاء
                                 </button>
+                                `
+                                : ""
+                        }
 
-                            </div>
+                        <button
+                            class="btn small danger"
+                            onclick="deleteBooking('${booking.id}')">
+                            حذف
+                        </button>
 
-                        </td>
+                    </div>
+                </td>
 
-                    </tr>
-                `;
-            }
-        ).join("");
-}
+            </tr>
+        `;
 
-
-function updateBookingStats() {
-
-    const total =
-        $("bookingCount");
-
-    const pending =
-        $("pendingCount");
-
-
-    if (total) {
-        total.textContent =
-            bookingsCache.length;
-    }
-
-
-    if (pending) {
-
-        pending.textContent =
-            bookingsCache.filter(
-                booking =>
-                    (
-                        booking.status ||
-                        "pending"
-                    ) === "pending"
-            ).length;
-    }
+    }).join("");
 }
 
 
 /* =========================================================
-   BOOKING ACTIONS
+   CONFIRM BOOKING
 ========================================================= */
 
-async function changeBookingStatus(
-    bookingId,
-    status
-) {
+window.confirmBooking = async function (bookingId) {
 
-    requireAdmin();
+    try {
 
-
-    const bookingRef =
-        doc(
-            db,
-            "bookings",
-            bookingId
+        await updateDoc(
+            doc(db, "bookings", bookingId),
+            {
+                status: "confirmed",
+                updatedAt: serverTimestamp()
+            }
         );
 
+    } catch (error) {
 
-    const bookingSnapshot =
-        await getDoc(
-            bookingRef
-        );
+        console.error("Confirm booking error:", error);
 
-
-    if (!bookingSnapshot.exists()) {
-        throw new Error(
-            "الحجز غير موجود."
-        );
+        alert("حدث خطأ أثناء تأكيد الحجز.");
     }
+};
 
+
+/* =========================================================
+   CANCEL BOOKING
+========================================================= */
+
+window.cancelBooking = async function (bookingId) {
 
     const booking =
-        bookingSnapshot.data();
+        bookingsCache.find(item => item.id === bookingId);
+
+    if (!booking) return;
 
 
-    await updateDoc(
-        bookingRef,
-        {
-            status,
-            updatedAt:
-                serverTimestamp()
-        }
-    );
+    try {
+
+        const batch = writeBatch(db);
 
 
-    /*
-     * When cancelling a booking,
-     * reopen the slot.
-     */
-
-    if (
-        status === "cancelled" &&
-        booking.slotId
-    ) {
-
-        const slotRef =
-            doc(
-                db,
-                "slots",
-                booking.slotId
-            );
+        batch.update(
+            doc(db, "bookings", bookingId),
+            {
+                status: "cancelled",
+                updatedAt: serverTimestamp()
+            }
+        );
 
 
-        const slotSnapshot =
-            await getDoc(slotRef);
+        if (booking.slotId) {
 
-
-        if (
-            slotSnapshot.exists()
-        ) {
-
-            await updateDoc(
-                slotRef,
+            batch.update(
+                doc(db, "slots", booking.slotId),
                 {
                     booked: false,
-                    bookingId: null,
-                    updatedAt:
-                        serverTimestamp()
+                    bookingId: "",
+                    updatedAt: serverTimestamp()
                 }
             );
         }
+
+
+        await batch.commit();
+
+    } catch (error) {
+
+        console.error("Cancel booking error:", error);
+
+        alert("حدث خطأ أثناء إلغاء الحجز.");
     }
-}
+};
 
 
-async function removeBooking(
-    bookingId
-) {
+/* =========================================================
+   DELETE BOOKING
+========================================================= */
 
-    requireAdmin();
-
-
-    const bookingRef =
-        doc(
-            db,
-            "bookings",
-            bookingId
-        );
-
-
-    const bookingSnapshot =
-        await getDoc(
-            bookingRef
-        );
-
-
-    if (!bookingSnapshot.exists()) {
-        return;
-    }
-
+window.deleteBooking = async function (bookingId) {
 
     const booking =
-        bookingSnapshot.data();
+        bookingsCache.find(item => item.id === bookingId);
+
+    if (!booking) return;
 
 
-    const batch =
-        writeBatch(db);
+    const confirmed =
+        confirm("هل تريد حذف هذا الحجز نهائيًا؟");
+
+    if (!confirmed) return;
 
 
-    batch.delete(
-        bookingRef
-    );
+    try {
+
+        const batch = writeBatch(db);
 
 
-    if (booking.slotId) {
-
-        const slotRef =
-            doc(
-                db,
-                "slots",
-                booking.slotId
-            );
-
-
-        const slotSnapshot =
-            await getDoc(slotRef);
+        batch.delete(
+            doc(db, "bookings", bookingId)
+        );
 
 
         if (
-            slotSnapshot.exists()
+            booking.slotId &&
+            booking.status !== "confirmed"
         ) {
 
             batch.update(
-                slotRef,
+                doc(db, "slots", booking.slotId),
                 {
                     booked: false,
-                    bookingId: null,
-                    updatedAt:
-                        serverTimestamp()
+                    bookingId: "",
+                    updatedAt: serverTimestamp()
                 }
             );
         }
+
+
+        await batch.commit();
+
+    } catch (error) {
+
+        console.error("Delete booking error:", error);
+
+        alert("حدث خطأ أثناء حذف الحجز.");
     }
-
-
-    await batch.commit();
-}
+};
 
 
 /* =========================================================
-   BOOKING BUTTONS
+   PROVIDERS SELECT
 ========================================================= */
 
-document.addEventListener(
-    "click",
-    async event => {
+function populateProviderSelect() {
 
-        const button =
-            event.target.closest(
-                "[data-action]"
-            );
+    if (!sProv) return;
 
 
-        if (!button) return;
+    const currentValue = sProv.value;
 
 
-        const action =
-            button.dataset.action;
-
-        const id =
-            button.dataset.id;
-
-
-        try {
-
-            if (
-                action ===
-                "confirm-booking"
-            ) {
-
-                await changeBookingStatus(
-                    id,
-                    "confirmed"
-                );
-
-                return;
-            }
+    sProv.innerHTML = `
+        <option value="">
+            اختر المعالج
+        </option>
+    `;
 
 
-            if (
-                action ===
-                "cancel-booking"
-            ) {
+    providersCache
+        .filter(provider => provider.active !== false)
+        .forEach(provider => {
 
-                if (
-                    !confirm(
-                        "هل تريد إلغاء هذا الحجز؟"
-                    )
-                ) return;
+            const option =
+                document.createElement("option");
 
+            option.value = provider.id;
 
-                await changeBookingStatus(
-                    id,
-                    "cancelled"
-                );
+            option.textContent =
+                provider.nameAr ||
+                provider.nameEn ||
+                "معالج";
 
-                return;
-            }
+            sProv.appendChild(option);
+        });
 
 
-            if (
-                action ===
-                "delete-booking"
-            ) {
-
-                if (
-                    !confirm(
-                        "هل تريد حذف الحجز نهائيًا؟"
-                    )
-                ) return;
-
-
-                await removeBooking(
-                    id
-                );
-
-                return;
-            }
-
-
-            if (
-                action ===
-                "whatsapp"
-            ) {
-
-                const booking =
-                    bookingsCache.find(
-                        item =>
-                            item.id === id
-                    );
-
-
-                if (!booking) return;
-
-
-                openWhatsApp(
-                    booking
-                );
-            }
-
-        } catch (error) {
-
-            console.error(
-                "Booking action:",
-                error
-            );
-
-            alert(
-                "حدث خطأ أثناء تنفيذ العملية."
-            );
-        }
-    }
-);
-
-
-/* =========================================================
-   WHATSAPP
-========================================================= */
-
-function openWhatsApp(
-    booking
-) {
-
-    let phone =
-        String(
-            booking.phone || ""
+    if (
+        currentValue &&
+        providersCache.some(
+            provider => provider.id === currentValue
         )
-        .replace(
-            /[^\d+]/g,
-            ""
-        );
-
-
-    if (
-        phone.startsWith("+")
     ) {
-
-        phone =
-            phone.substring(1);
+        sProv.value = currentValue;
     }
-
-
-    if (
-        phone.startsWith("00")
-    ) {
-
-        phone =
-            phone.substring(2);
-    }
-
-
-    if (
-        phone.startsWith("01") &&
-        phone.length === 11
-    ) {
-
-        phone =
-            "20" +
-            phone.substring(1);
-    }
-
-
-    if (!phone) {
-
-        alert(
-            "رقم العميل غير صالح."
-        );
-
-        return;
-    }
-
-
-    const message =
-`مرحبًا،
-معك MindCare.
-
-بخصوص طلب الحجز:
-
-رقم الحجز: ${booking.id}
-الاسم: ${booking.name || "—"}
-المختص: ${booking.provider || "—"}
-التاريخ: ${booking.date || "—"}
-الوقت: ${booking.time || "—"}
-
-نتواصل معك بخصوص موعدك.`;
-
-
-    const url =
-        `https://wa.me/${phone}?text=${encodeURIComponent(
-            message
-        )}`;
-
-
-    window.open(
-        url,
-        "_blank",
-        "noopener,noreferrer"
-    );
-}
-
-
-/* =========================================================
-   SLOTS
-========================================================= */
-
-function listenSlots() {
-
-    if (unsubscribeSlots) {
-        unsubscribeSlots();
-    }
-
-
-    unsubscribeSlots =
-        onSnapshot(
-            collection(db, "slots"),
-            snapshot => {
-
-                slotsCache =
-                    snapshot.docs.map(
-                        item => ({
-                            id: item.id,
-                            ...item.data()
-                        })
-                    );
-
-
-                slotsCache.sort(
-                    (a, b) => {
-
-                        const first =
-                            `${a.date || ""} ${a.time || ""}`;
-
-                        const second =
-                            `${b.date || ""} ${b.time || ""}`;
-
-                        return first.localeCompare(
-                            second
-                        );
-                    }
-                );
-
-
-                renderSlots();
-
-                updateSlotStats();
-            },
-
-            error => {
-
-                console.error(
-                    "Slots listener:",
-                    error
-                );
-            }
-        );
-}
-
-
-function renderSlots() {
-
-    const tbody =
-        $("slotRows");
-
-    if (!tbody) return;
-
-
-    if (!slotsCache.length) {
-
-        tbody.innerHTML = `
-            <tr>
-                <td
-                    colspan="5"
-                    class="empty">
-                    لا توجد مواعيد.
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-
-    tbody.innerHTML =
-        slotsCache.map(
-            slot => {
-
-                const booked =
-                    Boolean(
-                        slot.booked
-                    );
-
-
-                return `
-                    <tr>
-
-                        <td>
-                            ${escapeHTML(
-                                slot.provider ||
-                                "—"
-                            )}
-                        </td>
-
-                        <td dir="ltr">
-                            ${escapeHTML(
-                                slot.date ||
-                                "—"
-                            )}
-                        </td>
-
-                        <td dir="ltr">
-                            ${escapeHTML(
-                                slot.time ||
-                                "—"
-                            )}
-                        </td>
-
-                        <td>
-
-                            <span class="badge">
-
-                                ${
-                                    booked
-                                        ? "محجوز"
-                                        : "متاح"
-                                }
-
-                            </span>
-
-                        </td>
-
-                        <td>
-
-                            <button
-                                class="btn btn-outline mini"
-                                data-action="delete-slot"
-                                data-id="${escapeHTML(
-                                    slot.id
-                                )}">
-
-                                حذف
-
-                            </button>
-
-                        </td>
-
-                    </tr>
-                `;
-            }
-        ).join("");
-}
-
-
-function updateSlotStats() {
-
-    const counter =
-        $("slotCount");
-
-    if (!counter) return;
-
-
-    counter.textContent =
-        slotsCache.filter(
-            slot =>
-                !slot.booked &&
-                slot.date >=
-                    getTodayString()
-        ).length;
 }
 
 
@@ -1119,133 +805,121 @@ function updateSlotStats() {
    ADD SLOTS
 ========================================================= */
 
-$("slotForm")?.addEventListener(
-    "submit",
-    async event => {
+if (slotForm) {
+
+    slotForm.addEventListener("submit", async (event) => {
 
         event.preventDefault();
 
 
-        try {
+        const providerId =
+            sProv?.value.trim();
 
-            requireAdmin();
+        const date =
+            sDate?.value.trim();
 
-
-            const providerSelect =
-                $("sProv");
-
-            const date =
-                $("sDate")?.value;
-
-            const timesValue =
-                $("sTimes")?.value;
+        const timesText =
+            sTimes?.value.trim();
 
 
-            const providerId =
-                providerSelect?.value;
+        if (!providerId || !date || !timesText) {
+
+            showMessage(
+                slotMsg,
+                "أكمل بيانات الموعد.",
+                "error"
+            );
+
+            return;
+        }
 
 
-            const providerOption =
-                providerSelect
-                    ?.selectedOptions?.[0];
+        if (date < todayString()) {
+
+            showMessage(
+                slotMsg,
+                "لا يمكن إضافة موعد في تاريخ سابق.",
+                "error"
+            );
+
+            return;
+        }
 
 
-            const providerName =
-                providerOption
-                    ?.dataset?.name ||
-                providerOption
-                    ?.textContent
-                    ?.trim() ||
-                "";
+        const provider =
+            providersCache.find(
+                item => item.id === providerId
+            );
 
 
-            if (!providerId) {
+        if (!provider) {
 
-                showMessage(
-                    "slotMsg",
-                    "اختر المختص.",
-                    "error"
-                );
+            showMessage(
+                slotMsg,
+                "المعالج غير موجود.",
+                "error"
+            );
 
-                return;
-            }
-
-
-            if (!date) {
-
-                showMessage(
-                    "slotMsg",
-                    "اختر التاريخ.",
-                    "error"
-                );
-
-                return;
-            }
+            return;
+        }
 
 
-            const times =
-                String(
-                    timesValue || ""
-                )
+        const times =
+            timesText
                 .split(",")
-                .map(
-                    item =>
-                        item.trim()
-                )
+                .map(time => time.trim())
                 .filter(Boolean);
 
 
-            if (!times.length) {
+        if (!times.length) {
 
-                showMessage(
-                    "slotMsg",
-                    "أدخل موعدًا واحدًا على الأقل.",
-                    "error"
-                );
+            showMessage(
+                slotMsg,
+                "أدخل وقتًا واحدًا على الأقل.",
+                "error"
+            );
 
-                return;
-            }
+            return;
+        }
 
+
+        try {
 
             let added = 0;
 
 
-            for (
-                const time of times
-            ) {
+            for (const time of times) {
 
-                const duplicate =
-                    slotsCache.some(
-                        slot =>
-                            slot.providerId ===
-                                providerId &&
-                            slot.date ===
-                                date &&
-                            slot.time ===
-                                time
+                const alreadyExists =
+                    slotsCache.some(slot =>
+                        slot.providerId === providerId &&
+                        slot.date === date &&
+                        slot.time === time
                     );
 
 
-                if (duplicate) {
+                if (alreadyExists) {
                     continue;
                 }
 
 
                 await addDoc(
-                    collection(
-                        db,
-                        "slots"
-                    ),
+                    collection(db, "slots"),
                     {
                         providerId,
                         provider:
-                            providerName,
+                            provider.nameAr ||
+                            provider.nameEn ||
+                            "",
+
                         date,
                         time,
+
                         booked: false,
-                        bookingId: null,
-                        createdAt:
-                            serverTimestamp()
+                        bookingId: "",
+
+                        createdAt: serverTimestamp(),
+                        updatedAt: serverTimestamp()
                     }
                 );
 
@@ -1254,49 +928,138 @@ $("slotForm")?.addEventListener(
             }
 
 
-            showMessage(
-                "slotMsg",
-                `تمت إضافة ${added} موعد بنجاح.`,
-                "success"
-            );
+            if (added === 0) {
 
+                showMessage(
+                    slotMsg,
+                    "هذه المواعيد موجودة بالفعل.",
+                    "error"
+                );
 
-            event.target.reset();
+            } else {
+
+                showMessage(
+                    slotMsg,
+                    `تمت إضافة ${added} موعد بنجاح.`
+                );
+
+                sTimes.value = "";
+            }
 
         } catch (error) {
 
-            console.error(
-                "Add slot error:",
-                error
-            );
+            console.error("Add slots error:", error);
 
             showMessage(
-                "slotMsg",
-                "حدث خطأ أثناء إضافة الموعد.",
+                slotMsg,
+                "حدث خطأ أثناء إضافة المواعيد.",
                 "error"
             );
         }
+    });
+}
+
+
+/* =========================================================
+   RENDER SLOTS
+========================================================= */
+
+function renderSlots() {
+
+    if (!slotRows) return;
+
+
+    const sorted =
+        [...slotsCache].sort((a, b) => {
+
+            const first =
+                `${a.date || ""} ${a.time || ""}`;
+
+            const second =
+                `${b.date || ""} ${b.time || ""}`;
+
+            return first.localeCompare(second);
+        });
+
+
+    if (!sorted.length) {
+
+        slotRows.innerHTML = `
+            <tr>
+                <td colspan="5">
+                    لا توجد مواعيد مضافة.
+                </td>
+            </tr>
+        `;
+
+        return;
     }
-);
+
+
+    slotRows.innerHTML =
+        sorted.map(slot => {
+
+            const provider =
+                escapeHTML(slot.provider || "—");
+
+            const booked =
+                Boolean(slot.booked);
+
+
+            return `
+                <tr>
+
+                    <td>
+                        ${provider}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(slot.date || "—")}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(slot.time || "—")}
+                    </td>
+
+                    <td>
+                        ${
+                            booked
+                                ? `<span class="status status-confirmed">محجوز</span>`
+                                : `<span class="status status-pending">متاح</span>`
+                        }
+                    </td>
+
+                    <td>
+
+                        ${
+                            booked
+                                ? ""
+                                : `
+                                <button
+                                    class="btn small danger"
+                                    onclick="deleteSlot('${slot.id}')">
+                                    حذف
+                                </button>
+                                `
+                        }
+
+                    </td>
+
+                </tr>
+            `;
+
+        }).join("");
+}
 
 
 /* =========================================================
    DELETE SLOT
 ========================================================= */
 
-async function deleteSlot(
-    slotId
-) {
-
-    requireAdmin();
-
+window.deleteSlot = async function (slotId) {
 
     const slot =
-        slotsCache.find(
-            item =>
-                item.id === slotId
-        );
-
+        slotsCache.find(item => item.id === slotId);
 
     if (!slot) return;
 
@@ -1304,703 +1067,315 @@ async function deleteSlot(
     if (slot.booked) {
 
         alert(
-            "لا يمكن حذف موعد محجوز. قم بإلغاء الحجز أولًا."
+            "لا يمكن حذف موعد محجوز."
         );
 
         return;
     }
 
 
-    await deleteDoc(
-        doc(
-            db,
-            "slots",
-            slotId
+    if (
+        !confirm(
+            "هل تريد حذف هذا الموعد؟"
         )
-    );
-}
-
-
-/* =========================================================
-   TOPICS / SECTIONS
-========================================================= */
-
-function listenTopics() {
-
-    if (unsubscribeTopics) {
-        unsubscribeTopics();
-    }
-
-
-    unsubscribeTopics =
-        onSnapshot(
-            collection(
-                db,
-                "topics"
-            ),
-            snapshot => {
-
-                topicsCache =
-                    snapshot.docs.map(
-                        item => ({
-                            id: item.id,
-                            ...item.data()
-                        })
-                    );
-
-
-                topicsCache.sort(
-                    sortByCreatedAt
-                );
-
-
-                renderTopics();
-
-
-                const count =
-                    $("topicCount");
-
-                if (count) {
-                    count.textContent =
-                        topicsCache.length;
-                }
-            },
-
-            error => {
-
-                console.error(
-                    "Topics listener:",
-                    error
-                );
-            }
-        );
-}
-
-
-function renderTopics() {
-
-    const container =
-        $("topicsList");
-
-    if (!container) return;
-
-
-    if (!topicsCache.length) {
-
-        container.innerHTML = `
-            <p class="empty">
-                لا توجد أقسام حاليًا.
-            </p>
-        `;
-
+    ) {
         return;
     }
 
 
-    container.innerHTML =
-        topicsCache.map(
-            topic => {
+    try {
 
-                const active =
-                    topic.active !== false;
+        await deleteDoc(
+            doc(db, "slots", slotId)
+        );
 
+    } catch (error) {
 
-                return `
-                    <div
-                        class="card"
-                        style="
-                            padding:16px;
-                            margin-bottom:12px;
-                        ">
+        console.error("Delete slot error:", error);
 
-                        <div class="top">
-
-                            <div>
-
-                                <strong>
-                                    ${escapeHTML(
-                                        topic.titleAr ||
-                                        "بدون اسم"
-                                    )}
-                                </strong>
-
-                                <br>
-
-                                <small dir="ltr">
-                                    ${escapeHTML(
-                                        topic.titleEn ||
-                                        ""
-                                    )}
-                                </small>
-
-                            </div>
-
-
-                            <span
-                                class="badge">
-
-                                ${
-                                    active
-                                        ? "فعال"
-                                        : "مخفي"
-                                }
-
-                            </span>
-
-                        </div>
-
-
-                        <p class="note">
-
-                            ${escapeHTML(
-                                topic.descriptionAr ||
-                                topic.intro ||
-                                ""
-                            )}
-
-                        </p>
-
-
-                        <div class="acts">
-
-                            <button
-                                class="btn btn-soft mini"
-                                data-action="toggle-topic"
-                                data-id="${escapeHTML(
-                                    topic.id
-                                )}"
-                                data-active="${active}">
-
-                                ${
-                                    active
-                                        ? "إخفاء"
-                                        : "تفعيل"
-                                }
-
-                            </button>
-
-
-                            <button
-                                class="btn btn-outline mini"
-                                data-action="delete-topic"
-                                data-id="${escapeHTML(
-                                    topic.id
-                                )}">
-
-                                حذف
-
-                            </button>
-
-                        </div>
-
-                    </div>
-                `;
-            }
-        ).join("");
-}
+        alert("حدث خطأ أثناء حذف الموعد.");
+    }
+};
 
 
 /* =========================================================
-   ADD TOPIC
+   TOPICS
 ========================================================= */
 
-$("topicForm")?.addEventListener(
-    "submit",
-    async event => {
+if (topicForm) {
+
+    topicForm.addEventListener("submit", async (event) => {
 
         event.preventDefault();
 
 
-        try {
+        const key =
+            normalizeKey(tKey?.value);
 
-            requireAdmin();
+        const titleAr =
+            tTitle?.value.trim();
 
+        const titleEn =
+            tTitleEn?.value.trim();
 
-            const key =
-                $("tKey")
-                    ?.value
-                    .trim()
-                    .toLowerCase()
-                    .replace(
-                        /\s+/g,
-                        "-"
-                    );
+        const introAr =
+            tIntro?.value.trim();
 
+        const introEn =
+            tIntroEn?.value.trim();
 
-            const titleAr =
-                $("tTitle")
-                    ?.value
-                    .trim();
+        const symptoms =
+            tSymptoms?.value.trim();
 
 
-            const descriptionAr =
-                $("tIntro")
-                    ?.value
-                    .trim();
-
-
-            const symptomsValue =
-                $("tSymptoms")
-                    ?.value
-                    .trim();
-
-
-            const titleEn =
-                $("tTitleEn")
-                    ?.value
-                    .trim() ||
-                titleAr;
-
-
-            const descriptionEn =
-                $("tIntroEn")
-                    ?.value
-                    .trim() ||
-                descriptionAr;
-
-
-            if (
-                !key ||
-                !titleAr
-            ) {
-
-                showMessage(
-                    "topicMsg",
-                    "أدخل اسم ومعرّف القسم.",
-                    "error"
-                );
-
-                return;
-            }
-
-
-            const symptoms =
-                symptomsValue
-                    ? symptomsValue
-                        .split(",")
-                        .map(
-                            item =>
-                                item.trim()
-                        )
-                        .filter(Boolean)
-                    : [];
-
-
-            /*
-             * Use key as document ID.
-             */
-
-            const topicRef =
-                doc(
-                    db,
-                    "topics",
-                    key
-                );
-
-
-            const existing =
-                await getDoc(
-                    topicRef
-                );
-
-
-            const data = {
-
-                key,
-
-                titleAr,
-
-                titleEn,
-
-                descriptionAr,
-
-                descriptionEn,
-
-                intro:
-                    descriptionAr,
-
-                symptoms,
-
-                active:
-                    existing.exists()
-                        ? existing
-                            .data()
-                            .active !== false
-                        : true,
-
-                updatedAt:
-                    serverTimestamp()
-            };
-
-
-            if (existing.exists()) {
-
-                await updateDoc(
-                    topicRef,
-                    data
-                );
-
-            } else {
-
-                await setDoc(
-                    topicRef,
-                    {
-                        ...data,
-                        createdAt:
-                            serverTimestamp()
-                    }
-                );
-            }
-
+        if (!key || !titleAr) {
 
             showMessage(
-                "topicMsg",
-                "تم حفظ القسم بنجاح.",
-                "success"
+                topicMsg,
+                "اكتب اسم القسم والمفتاح.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        try {
+
+            await setDoc(
+                doc(db, "topics", key),
+                {
+                    key,
+
+                    titleAr,
+                    titleEn,
+
+                    descriptionAr: introAr,
+                    descriptionEn: introEn,
+
+                    intro: introAr,
+                    introEn,
+
+                    symptoms,
+
+                    active: true,
+
+                    updatedAt:
+                        serverTimestamp()
+                },
+                {
+                    merge: true
+                }
             );
 
 
-            event.target.reset();
+            showMessage(
+                topicMsg,
+                "تم حفظ القسم بنجاح."
+            );
+
+
+            topicForm.reset();
 
         } catch (error) {
 
-            console.error(
-                "Topic error:",
-                error
-            );
+            console.error("Topic save error:", error);
 
             showMessage(
-                "topicMsg",
+                topicMsg,
                 "حدث خطأ أثناء حفظ القسم.",
                 "error"
             );
         }
-    }
-);
-
-
-/* =========================================================
-   PROVIDERS / SPECIALISTS
-========================================================= */
-
-function listenProviders() {
-
-    if (unsubscribeProviders) {
-        unsubscribeProviders();
-    }
-
-
-    unsubscribeProviders =
-        onSnapshot(
-            collection(
-                db,
-                "providers"
-            ),
-            snapshot => {
-
-                providersCache =
-                    snapshot.docs.map(
-                        item => ({
-                            id: item.id,
-                            ...item.data()
-                        })
-                    );
-
-
-                providersCache.sort(
-                    sortByCreatedAt
-                );
-
-
-                renderProviders();
-
-                fillProviderSelect();
-            },
-
-            error => {
-
-                console.error(
-                    "Providers listener:",
-                    error
-                );
-            }
-        );
+    });
 }
 
 
-function renderProviders() {
+/* =========================================================
+   RENDER TOPICS
+========================================================= */
 
-    const container =
-        $("providersList");
+function renderTopics() {
 
-    if (!container) return;
+    if (!topicsList) return;
 
 
-    if (!providersCache.length) {
+    if (!topicsCache.length) {
 
-        container.innerHTML = `
-            <p class="empty">
-                لا يوجد مختصون حاليًا.
-            </p>
-        `;
+        topicsList.innerHTML =
+            "<p>لا توجد أقسام.</p>";
 
         return;
     }
 
 
-    container.innerHTML =
-        providersCache.map(
-            provider => {
+    topicsList.innerHTML =
+        topicsCache.map(topic => {
 
-                const active =
-                    provider.active !== false;
-
-
-                return `
-                    <div
-                        class="card"
-                        style="
-                            padding:16px;
-                            margin-bottom:12px;
-                        ">
-
-                        <div class="top">
-
-                            <div>
-
-                                <strong>
-                                    ${escapeHTML(
-                                        provider.nameAr ||
-                                        "بدون اسم"
-                                    )}
-                                </strong>
-
-                                <br>
-
-                                <small dir="ltr">
-                                    ${escapeHTML(
-                                        provider.nameEn ||
-                                        ""
-                                    )}
-                                </small>
-
-                                <br>
-
-                                <small>
-                                    ${escapeHTML(
-                                        provider.specialtyAr ||
-                                        ""
-                                    )}
-                                </small>
-
-                            </div>
+            const active =
+                topic.active !== false;
 
 
-                            <span class="badge">
+            return `
+                <div class="admin-item">
 
-                                ${
-                                    active
-                                        ? "فعال"
-                                        : "مخفي"
-                                }
+                    <div>
 
-                            </span>
-
-                        </div>
-
-
-                        <p class="note">
-
+                        <strong>
                             ${escapeHTML(
-                                provider.bioAr ||
-                                ""
+                                topic.titleAr ||
+                                topic.titleEn ||
+                                "قسم"
                             )}
+                        </strong>
 
-                        </p>
-
-
-                        <div class="acts">
-
-                            <button
-                                class="btn btn-soft mini"
-                                data-action="toggle-provider"
-                                data-id="${escapeHTML(
-                                    provider.id
-                                )}"
-                                data-active="${active}">
-
-                                ${
-                                    active
-                                        ? "إخفاء"
-                                        : "تفعيل"
-                                }
-
-                            </button>
-
-
-                            <button
-                                class="btn btn-outline mini"
-                                data-action="delete-provider"
-                                data-id="${escapeHTML(
-                                    provider.id
-                                )}">
-
-                                حذف
-
-                            </button>
-
-                        </div>
+                        <small>
+                            ${escapeHTML(
+                                topic.key || topic.id
+                            )}
+                        </small>
 
                     </div>
-                `;
-            }
-        ).join("");
-}
 
+                    <div class="actions">
 
-function fillProviderSelect() {
+                        <button
+                            class="btn small"
+                            onclick="toggleTopic('${topic.id}', ${active})">
+                            ${
+                                active
+                                    ? "تعطيل"
+                                    : "تفعيل"
+                            }
+                        </button>
 
-    const select =
-        $("sProv");
+                        <button
+                            class="btn small danger"
+                            onclick="deleteTopic('${topic.id}')">
+                            حذف
+                        </button>
 
-    if (!select) return;
+                    </div>
 
+                </div>
+            `;
 
-    const activeProviders =
-        providersCache.filter(
-            provider =>
-                provider.active !== false
-        );
-
-
-    if (!activeProviders.length) {
-
-        select.innerHTML = `
-            <option value="">
-                لا يوجد مختصون فعالون
-            </option>
-        `;
-
-        return;
-    }
-
-
-    select.innerHTML =
-        activeProviders.map(
-            provider => {
-
-                const name =
-                    provider.nameAr ||
-                    provider.nameEn ||
-                    "مختص";
-
-
-                return `
-                    <option
-                        value="${escapeHTML(
-                            provider.id
-                        )}"
-                        data-name="${escapeHTML(
-                            name
-                        )}">
-
-                        ${escapeHTML(
-                            name
-                        )}
-
-                    </option>
-                `;
-            }
-        ).join("");
+        }).join("");
 }
 
 
 /* =========================================================
-   ADD PROVIDER
+   TOGGLE TOPIC
 ========================================================= */
 
-$("providerForm")?.addEventListener(
-    "submit",
-    async event => {
+window.toggleTopic = async function (
+    topicId,
+    currentState
+) {
+
+    try {
+
+        await updateDoc(
+            doc(db, "topics", topicId),
+            {
+                active: !currentState,
+                updatedAt: serverTimestamp()
+            }
+        );
+
+    } catch (error) {
+
+        console.error("Toggle topic error:", error);
+
+        alert("حدث خطأ.");
+    }
+};
+
+
+/* =========================================================
+   DELETE TOPIC
+========================================================= */
+
+window.deleteTopic = async function (topicId) {
+
+    if (
+        !confirm(
+            "هل تريد حذف هذا القسم نهائيًا؟"
+        )
+    ) {
+        return;
+    }
+
+
+    try {
+
+        await deleteDoc(
+            doc(db, "topics", topicId)
+        );
+
+    } catch (error) {
+
+        console.error("Delete topic error:", error);
+
+        alert("حدث خطأ أثناء حذف القسم.");
+    }
+};
+
+
+/* =========================================================
+   PROVIDERS
+========================================================= */
+
+if (providerForm) {
+
+    providerForm.addEventListener("submit", async (event) => {
 
         event.preventDefault();
 
 
+        const nameAr =
+            providerName?.value.trim();
+
+        const nameEn =
+            providerNameEn?.value.trim();
+
+        const specialtyAr =
+            providerSpecialtyAr?.value.trim();
+
+        const specialtyEn =
+            providerSpecialtyEn?.value.trim();
+
+        const bioAr =
+            providerBioAr?.value.trim();
+
+        const bioEn =
+            providerBioEn?.value.trim();
+
+
+        if (!nameAr) {
+
+            showMessage(
+                providerMsg,
+                "اكتب اسم المعالج.",
+                "error"
+            );
+
+            return;
+        }
+
+
         try {
 
-            requireAdmin();
-
-
-            const nameAr =
-                $("providerName")
-                    ?.value
-                    .trim();
-
-
-            const nameEn =
-                $("providerNameEn")
-                    ?.value
-                    .trim() ||
-                nameAr;
-
-
-            const specialtyAr =
-                $("providerSpecialtyAr")
-                    ?.value
-                    .trim() ||
-                "";
-
-
-            const specialtyEn =
-                $("providerSpecialtyEn")
-                    ?.value
-                    .trim() ||
-                specialtyAr;
-
-
-            const bioAr =
-                $("providerBioAr")
-                    ?.value
-                    .trim() ||
-                "";
-
-
-            const bioEn =
-                $("providerBioEn")
-                    ?.value
-                    .trim() ||
-                bioAr;
-
-
-            if (!nameAr) {
-
-                showMessage(
-                    "providerMsg",
-                    "اكتب اسم المختص.",
-                    "error"
-                );
-
-                return;
-            }
-
-
             await addDoc(
-                collection(
-                    db,
-                    "providers"
-                ),
+                collection(db, "providers"),
                 {
-
                     nameAr,
-
                     nameEn,
 
                     specialtyAr,
-
                     specialtyEn,
 
                     bioAr,
-
                     bioEn,
 
                     active: true,
@@ -2015,129 +1390,155 @@ $("providerForm")?.addEventListener(
 
 
             showMessage(
-                "providerMsg",
-                "تمت إضافة المختص بنجاح.",
-                "success"
+                providerMsg,
+                "تمت إضافة المعالج بنجاح."
             );
 
 
-            event.target.reset();
+            providerForm.reset();
 
         } catch (error) {
 
             console.error(
-                "Provider error:",
+                "Provider add error:",
                 error
             );
 
             showMessage(
-                "providerMsg",
-                "حدث خطأ أثناء إضافة المختص.",
+                providerMsg,
+                "حدث خطأ أثناء إضافة المعالج.",
                 "error"
             );
         }
-    }
-);
+    });
+}
 
 
 /* =========================================================
-   TOPIC / PROVIDER ACTIONS
+   RENDER PROVIDERS
 ========================================================= */
 
-async function toggleTopic(
-    id,
-    current
-) {
+function renderProviders() {
 
-    requireAdmin();
+    if (!providersList) return;
 
 
-    await updateDoc(
-        doc(
-            db,
-            "topics",
-            id
-        ),
-        {
-            active: !current,
-            updatedAt:
-                serverTimestamp()
-        }
-    );
+    if (!providersCache.length) {
+
+        providersList.innerHTML =
+            "<p>لا يوجد معالجون.</p>";
+
+        return;
+    }
+
+
+    providersList.innerHTML =
+        providersCache.map(provider => {
+
+            const active =
+                provider.active !== false;
+
+
+            return `
+                <div class="admin-item">
+
+                    <div>
+
+                        <strong>
+                            ${escapeHTML(
+                                provider.nameAr ||
+                                provider.nameEn ||
+                                "معالج"
+                            )}
+                        </strong>
+
+                        <small>
+                            ${escapeHTML(
+                                provider.specialtyAr ||
+                                provider.specialtyEn ||
+                                ""
+                            )}
+                        </small>
+
+                    </div>
+
+                    <div class="actions">
+
+                        <button
+                            class="btn small"
+                            onclick="toggleProvider('${provider.id}', ${active})">
+                            ${
+                                active
+                                    ? "تعطيل"
+                                    : "تفعيل"
+                            }
+                        </button>
+
+                        <button
+                            class="btn small danger"
+                            onclick="deleteProvider('${provider.id}')">
+                            حذف
+                        </button>
+
+                    </div>
+
+                </div>
+            `;
+
+        }).join("");
 }
 
 
-async function deleteTopic(
-    id
+/* =========================================================
+   TOGGLE PROVIDER
+========================================================= */
+
+window.toggleProvider = async function (
+    providerId,
+    currentState
 ) {
 
-    requireAdmin();
+    try {
+
+        await updateDoc(
+            doc(db, "providers", providerId),
+            {
+                active: !currentState,
+                updatedAt: serverTimestamp()
+            }
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Toggle provider error:",
+            error
+        );
+
+        alert("حدث خطأ.");
+    }
+};
 
 
-    if (
-        !confirm(
-            "هل تريد حذف هذا القسم نهائيًا؟"
-        )
-    ) return;
+/* =========================================================
+   DELETE PROVIDER
+========================================================= */
 
-
-    await deleteDoc(
-        doc(
-            db,
-            "topics",
-            id
-        )
-    );
-}
-
-
-async function toggleProvider(
-    id,
-    current
+window.deleteProvider = async function (
+    providerId
 ) {
 
-    requireAdmin();
-
-
-    await updateDoc(
-        doc(
-            db,
-            "providers",
-            id
-        ),
-        {
-            active: !current,
-            updatedAt:
-                serverTimestamp()
-        }
-    );
-}
-
-
-async function deleteProvider(
-    id
-) {
-
-    requireAdmin();
-
-
-    /*
-     * We recommend disabling a provider
-     * instead of deleting them if they
-     * already have historical bookings.
-     */
-
-    const hasRelatedBooking =
+    const hasBookings =
         bookingsCache.some(
             booking =>
-                booking.providerId === id
+                booking.providerId === providerId
         );
 
 
-    if (hasRelatedBooking) {
+    if (hasBookings) {
 
         alert(
-            "هذا المختص مرتبط بحجوزات سابقة. استخدم إخفاء بدل الحذف."
+            "لا يمكن حذف هذا المعالج لأنه مرتبط بحجوزات سابقة. يمكنك تعطيله بدلًا من حذفه."
         );
 
         return;
@@ -2146,198 +1547,210 @@ async function deleteProvider(
 
     if (
         !confirm(
-            "هل تريد حذف هذا المختص نهائيًا؟"
+            "هل تريد حذف هذا المعالج؟"
         )
-    ) return;
+    ) {
+        return;
+    }
 
 
-    await deleteDoc(
-        doc(
-            db,
-            "providers",
-            id
-        )
-    );
-}
+    try {
+
+        await deleteDoc(
+            doc(db, "providers", providerId)
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Delete provider error:",
+            error
+        );
+
+        alert("حدث خطأ أثناء حذف المعالج.");
+    }
+};
 
 
 /* =========================================================
-   GLOBAL ACTION HANDLER
+   ADMIN TABS
 ========================================================= */
 
-document.addEventListener(
-    "click",
-    async event => {
+document
+    .querySelectorAll("[data-tab]")
+    .forEach(button => {
 
-        const button =
-            event.target.closest(
-                "[data-action]"
-            );
+        button.addEventListener("click", () => {
 
-
-        if (!button) return;
+            const tab =
+                button.dataset.tab;
 
 
-        const action =
-            button.dataset.action;
-
-        const id =
-            button.dataset.id;
-
-
-        try {
-
-            switch (action) {
-
-                case "delete-slot":
-
-                    if (
-                        confirm(
-                            "هل تريد حذف هذا الموعد؟"
-                        )
-                    ) {
-
-                        await deleteSlot(id);
-                    }
-
-                    break;
+            document
+                .querySelectorAll("[data-tab]")
+                .forEach(item => {
+                    item.classList.remove("active");
+                });
 
 
-                case "toggle-topic":
-
-                    await toggleTopic(
-                        id,
-                        button.dataset.active ===
-                            "true"
-                    );
-
-                    break;
+            document
+                .querySelectorAll(".admin-panel")
+                .forEach(panel => {
+                    panel.classList.remove("active");
+                });
 
 
-                case "delete-topic":
-
-                    await deleteTopic(id);
-
-                    break;
+            button.classList.add("active");
 
 
-                case "toggle-provider":
-
-                    await toggleProvider(
-                        id,
-                        button.dataset.active ===
-                            "true"
-                    );
-
-                    break;
+            const target =
+                document.getElementById(
+                    `p-${tab}`
+                );
 
 
-                case "delete-provider":
-
-                    await deleteProvider(id);
-
-                    break;
+            if (target) {
+                target.classList.add("active");
             }
 
-        } catch (error) {
+        });
 
-            console.error(
-                "Admin action error:",
-                error
-            );
-
-            alert(
-                "حدث خطأ أثناء تنفيذ العملية."
-            );
-        }
-    }
-);
+    });
 
 
 /* =========================================================
    BROWSER NOTIFICATIONS
 ========================================================= */
 
-const notificationButton =
-    $("enableNotifications");
+if (enableNotifications) {
+
+    enableNotifications.addEventListener(
+        "click",
+        async () => {
+
+            if (
+                !("Notification" in window)
+            ) {
+
+                alert(
+                    "المتصفح لا يدعم الإشعارات."
+                );
+
+                return;
+            }
 
 
-notificationButton?.addEventListener(
-    "click",
-    async () => {
+            try {
 
-        if (
-            !("Notification" in window)
-        ) {
+                const permission =
+                    await Notification.requestPermission();
 
-            alert(
-                "المتصفح لا يدعم إشعارات النظام."
-            );
 
-            return;
+                if (permission === "granted") {
+
+                    new Notification(
+                        "MindCare",
+                        {
+                            body:
+                                "تم تفعيل إشعارات لوحة الإدارة."
+                        }
+                    );
+
+                    enableNotifications.textContent =
+                        "الإشعارات مفعلة";
+
+                } else {
+
+                    alert(
+                        "لم يتم السماح بالإشعارات."
+                    );
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Notification error:",
+                    error
+                );
+            }
         }
+    );
+}
 
 
-        const permission =
-            await Notification.requestPermission();
+/* =========================================================
+   NEW BOOKING NOTIFICATION
+   Realtime dashboard notification only.
+   No WhatsApp.
+========================================================= */
+
+let previousBookingCount = null;
 
 
-        if (
-            permission ===
-            "granted"
-        ) {
+function checkForNewBookingNotification() {
 
-            alert(
-                "تم تفعيل إشعارات الحجوزات."
-            );
+    if (previousBookingCount === null) {
 
-        } else {
+        previousBookingCount =
+            bookingsCache.length;
 
-            alert(
-                "لم يتم السماح بالإشعارات."
-            );
-        }
+        return;
     }
-);
 
 
-function notifyNewBooking(
-    booking
+    if (
+        bookingsCache.length >
+        previousBookingCount
+    ) {
+
+        const newest =
+            bookingsCache[0];
+
+
+        showAdminNotification(
+            "حجز جديد",
+            newest
+                ? `تم استلام حجز جديد من ${newest.name || "عميل"}`
+                : "تم استلام حجز جديد."
+        );
+    }
+
+
+    previousBookingCount =
+        bookingsCache.length;
+}
+
+
+function showAdminNotification(
+    title,
+    body
 ) {
 
-    const title =
-        "🔔 حجز جديد في MindCare";
+    if (notificationTitle) {
+        notificationTitle.textContent = title;
+    }
 
+    if (notificationBody) {
+        notificationBody.textContent = body;
+    }
 
-    const body =
-        `${booking.name || "عميل"} - ` +
-        `${booking.provider || "مختص"} - ` +
-        `${booking.date || ""} ` +
-        `${booking.time || ""}`;
+    if (notificationBox) {
 
+        notificationBox.style.display =
+            "block";
 
-    const counter =
-        $("notificationBadge");
+        setTimeout(() => {
 
+            notificationBox.style.display =
+                "none";
 
-    if (counter) {
-
-        const current =
-            Number(
-                counter.textContent || 0
-            );
-
-        counter.textContent =
-            current + 1;
-
-        counter.hidden = false;
+        }, 5000);
     }
 
 
     if (
         "Notification" in window &&
-        Notification.permission ===
-            "granted"
+        Notification.permission === "granted"
     ) {
 
         try {
@@ -2345,16 +1758,14 @@ function notifyNewBooking(
             new Notification(
                 title,
                 {
-                    body,
-                    tag:
-                        `mindcare-${booking.id}`
+                    body
                 }
             );
 
         } catch (error) {
 
-            console.warn(
-                "Notification error:",
+            console.error(
+                "Browser notification error:",
                 error
             );
         }
@@ -2363,218 +1774,26 @@ function notifyNewBooking(
 
 
 /* =========================================================
-   TABS
+   BOOKING LISTENER WRAPPER
 ========================================================= */
 
-document.addEventListener(
-    "click",
-    event => {
-
-        const button =
-            event.target.closest(
-                "[data-tab]"
-            );
-
-
-        if (!button) return;
-
-
-        const tab =
-            button.dataset.tab;
-
-
-        const tabs = [
-            "bookings",
-            "slots",
-            "topics",
-            "providers"
-        ];
-
-
-        tabs.forEach(
-            name => {
-
-                const section =
-                    $(`p-${name}`);
-
-
-                if (section) {
-
-                    section.hidden =
-                        name !== tab;
-                }
-            }
-        );
-
-
-        document
-            .querySelectorAll(
-                "[data-tab]"
-            )
-            .forEach(
-                item => {
-
-                    item.classList.remove(
-                        "btn-primary"
-                    );
-
-                    item.classList.add(
-                        "btn-soft"
-                    );
-                }
-            );
-
-
-        button.classList.remove(
-            "btn-soft"
-        );
-
-        button.classList.add(
-            "btn-primary"
-        );
-    }
-);
+const originalRenderBookings =
+    renderBookings;
 
 
 /* =========================================================
-   UTILITIES
+   INITIAL UI
 ========================================================= */
 
-function formatDateTime(
-    timestamp
-) {
-
-    if (!timestamp) {
-        return "—";
-    }
-
-
-    try {
-
-        return timestamp
-            .toDate()
-            .toLocaleString(
-                "ar-EG",
-                {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit"
-                }
-            );
-
-    } catch {
-
-        return "—";
-    }
-}
-
-
-function sortByCreatedAt(
-    a,
-    b
-) {
-
-    const first =
-        a.createdAt?.seconds ||
-        0;
-
-    const second =
-        b.createdAt?.seconds ||
-        0;
-
-    return second - first;
-}
-
-
-function getStatusLabel(
-    status
-) {
-
-    const labels = {
-
-        pending:
-            "قيد الانتظار",
-
-        confirmed:
-            "مؤكد",
-
-        cancelled:
-            "ملغي"
-    };
-
-
-    return (
-        labels[status] ||
-        status ||
-        "غير محدد"
-    );
-}
-
-
-function getStatusClass(
-    status
-) {
-
-    if (
-        status ===
-        "confirmed"
-    ) {
-
-        return "confirmed";
-    }
-
-
-    if (
-        status ===
-        "cancelled"
-    ) {
-
-        return "cancelled";
-    }
-
-
-    return "pending";
-}
-
-
-function getTodayString() {
-
-    const now =
-        new Date();
-
-
-    const year =
-        now.getFullYear();
-
-
-    const month =
-        String(
-            now.getMonth() + 1
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    const day =
-        String(
-            now.getDate()
-        ).padStart(
-            2,
-            "0"
-        );
-
-
-    return `${year}-${month}-${day}`;
+if (sDate) {
+    sDate.min = todayString();
 }
 
 
 /* =========================================================
-   INITIAL
+   DEBUG
 ========================================================= */
 
 console.log(
-    "MindCare Admin Firebase loaded."
+    "MindCare Admin Firebase initialized successfully."
 );
