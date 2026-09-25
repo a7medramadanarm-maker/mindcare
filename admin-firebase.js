@@ -1,22 +1,28 @@
 /* =========================================================
-   MindCare Admin - Firebase Firestore
+   MindCare Admin
+   Firebase Firestore + Authentication
    Prepared By Eng Ahmad Ramadan
-
-   Responsibilities:
-   - Bookings
-   - Slots
-   - Topics / Sections
-   - Providers / Specialists
-   - Realtime booking updates
-   - Browser notifications
 ========================================================= */
 
 import {
+    initializeApp
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+
+import {
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+import {
+    getFirestore,
     collection,
-    addDoc,
-    getDocs,
-    getDoc,
     doc,
+    addDoc,
+    setDoc,
+    getDoc,
+    getDocs,
     updateDoc,
     deleteDoc,
     query,
@@ -27,26 +33,60 @@ import {
     writeBatch
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-const {
-    db,
-    auth
-} = window.MC_FIREBASE;
 
-const ADMIN_UID = "70WNrO5zubWwSxegfpSPRkCIfhw1";
+/* =========================================================
+   FIREBASE
+========================================================= */
 
-let bookingsUnsubscribe = null;
-let slotsUnsubscribe = null;
-let topicsUnsubscribe = null;
-let providersUnsubscribe = null;
+const firebaseConfig = window.MINDCARE_FIREBASE_CONFIG;
+
+if (!firebaseConfig) {
+    throw new Error(
+        "Firebase configuration not found. Check firebase-config.js"
+    );
+}
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+
+/* =========================================================
+   ADMIN UID
+========================================================= */
+
+const ADMIN_UID =
+    "70WNrO5zubWwSxegfpSPRkCIfhw1";
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let unsubscribeBookings = null;
+let unsubscribeSlots = null;
+let unsubscribeTopics = null;
+let unsubscribeProviders = null;
+
+let providersCache = [];
+let topicsCache = [];
+let bookingsCache = [];
+let slotsCache = [];
 
 let firstBookingSnapshot = true;
 
 
 /* =========================================================
-   HELPERS
+   DOM HELPERS
 ========================================================= */
 
+const $ = id =>
+    document.getElementById(id);
+
+
 function escapeHTML(value) {
+
     return String(value ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -56,95 +96,826 @@ function escapeHTML(value) {
 }
 
 
-function getCurrentUser() {
+function showMessage(id, message, type = "note") {
+
+    const element = $(id);
+
+    if (!element) return;
+
+    element.textContent = message;
+
+    element.className =
+        type === "error"
+            ? "err"
+            : type === "success"
+                ? "success"
+                : "note";
+}
+
+
+function requireAdmin() {
+
     const user = auth.currentUser;
 
-    if (!user || user.uid !== ADMIN_UID) {
-        throw new Error("UNAUTHORIZED");
+    if (!user) {
+        throw new Error("NOT_AUTHENTICATED");
+    }
+
+    if (user.uid !== ADMIN_UID) {
+        throw new Error("NOT_ADMIN");
     }
 
     return user;
 }
 
 
-function showMessage(elementId, message, type = "note") {
-    const el = document.getElementById(elementId);
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
 
-    if (!el) return;
+const loginForm =
+    $("loginForm");
 
-    el.textContent = message;
 
-    el.className = type === "error"
-        ? "err"
-        : type === "success"
-            ? "success"
-            : "note";
+if (loginForm) {
+
+    loginForm.addEventListener(
+        "submit",
+        async event => {
+
+            event.preventDefault();
+
+            const email =
+                $("email")?.value.trim();
+
+            const password =
+                $("pass")?.value;
+
+
+            const errorElement =
+                $("loginErr");
+
+
+            if (!email || !password) {
+
+                if (errorElement) {
+                    errorElement.textContent =
+                        "أدخل البريد الإلكتروني وكلمة المرور.";
+                }
+
+                return;
+            }
+
+
+            try {
+
+                await signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+            } catch (error) {
+
+                console.error(
+                    "Login error:",
+                    error
+                );
+
+                if (errorElement) {
+
+                    errorElement.textContent =
+                        "بيانات الدخول غير صحيحة أو حدث خطأ.";
+                }
+            }
+        }
+    );
 }
 
 
-function formatTimestamp(timestamp) {
-    if (!timestamp) return "—";
+/* =========================================================
+   AUTH STATE
+========================================================= */
 
-    try {
-        const date = timestamp.toDate();
+onAuthStateChanged(
+    auth,
+    user => {
 
-        return date.toLocaleString("ar-EG", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit"
-        });
-    } catch {
-        return "—";
+        if (!user) {
+
+            showLogin();
+
+            return;
+        }
+
+
+        if (user.uid !== ADMIN_UID) {
+
+            signOut(auth);
+
+            alert(
+                "هذا الحساب ليس حساب الإدارة."
+            );
+
+            return;
+        }
+
+
+        showAdmin();
+
+        startRealtimeListeners();
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "mindcare-admin-ready"
+            )
+        );
+    }
+);
+
+
+/* =========================================================
+   LOGIN / APP DISPLAY
+========================================================= */
+
+function showLogin() {
+
+    const login =
+        $("login");
+
+    const app =
+        $("app");
+
+    if (login) {
+        login.hidden = false;
+    }
+
+    if (app) {
+        app.hidden = true;
     }
 }
 
 
-function statusLabel(status) {
-    const labels = {
-        pending: "قيد الانتظار",
-        confirmed: "مؤكد",
-        cancelled: "ملغي"
-    };
+function showAdmin() {
 
-    return labels[status] || status || "غير محدد";
+    const login =
+        $("login");
+
+    const app =
+        $("app");
+
+    if (login) {
+        login.hidden = true;
+    }
+
+    if (app) {
+        app.hidden = false;
+    }
 }
 
 
-function statusClass(status) {
-    if (status === "confirmed") return "confirmed";
-    if (status === "cancelled") return "cancelled";
-    return "pending";
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+$("logout")?.addEventListener(
+    "click",
+    async () => {
+
+        try {
+
+            await signOut(auth);
+
+        } catch (error) {
+
+            console.error(
+                "Logout error:",
+                error
+            );
+        }
+    }
+);
+
+
+/* =========================================================
+   REALTIME LISTENERS
+========================================================= */
+
+function startRealtimeListeners() {
+
+    listenBookings();
+
+    listenSlots();
+
+    listenTopics();
+
+    listenProviders();
 }
 
 
-function normalizePhone(phone) {
-    let value = String(phone || "").replace(/[^\d+]/g, "");
+/* =========================================================
+   BOOKINGS
+========================================================= */
 
-    if (value.startsWith("+")) {
-        value = value.substring(1);
+function listenBookings() {
+
+    if (unsubscribeBookings) {
+        unsubscribeBookings();
     }
 
-    if (value.startsWith("00")) {
-        value = value.substring(2);
-    }
 
-    if (value.startsWith("01") && value.length === 11) {
-        value = "20" + value.substring(1);
-    }
+    const bookingsQuery =
+        query(
+            collection(db, "bookings"),
+            orderBy(
+                "createdAt",
+                "desc"
+            )
+        );
 
-    return value;
+
+    unsubscribeBookings =
+        onSnapshot(
+            bookingsQuery,
+            snapshot => {
+
+                bookingsCache =
+                    snapshot.docs.map(
+                        item => ({
+                            id: item.id,
+                            ...item.data()
+                        })
+                    );
+
+
+                renderBookings();
+
+                updateBookingStats();
+
+
+                if (!firstBookingSnapshot) {
+
+                    snapshot.docChanges()
+                        .forEach(change => {
+
+                            if (
+                                change.type ===
+                                "added"
+                            ) {
+
+                                notifyNewBooking({
+                                    id:
+                                        change.doc.id,
+                                    ...change.doc.data()
+                                });
+                            }
+                        });
+                }
+
+
+                firstBookingSnapshot = false;
+            },
+
+            error => {
+
+                console.error(
+                    "Bookings listener error:",
+                    error
+                );
+            }
+        );
 }
 
 
-function openWhatsApp(phone, booking) {
-    const number = normalizePhone(phone);
+function renderBookings() {
 
-    if (!number) {
-        alert("رقم هاتف العميل غير صالح.");
+    const tbody =
+        $("bookRows");
+
+    if (!tbody) return;
+
+
+    if (!bookingsCache.length) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td
+                    colspan="7"
+                    class="empty">
+                    لا توجد حجوزات حاليًا.
+                </td>
+            </tr>
+        `;
+
         return;
     }
+
+
+    tbody.innerHTML =
+        bookingsCache.map(
+            booking => {
+
+                const status =
+                    booking.status ||
+                    "pending";
+
+
+                return `
+                    <tr>
+
+                        <td>
+                            <strong>
+                                ${escapeHTML(
+                                    booking.id
+                                )}
+                            </strong>
+
+                            <br>
+
+                            <small>
+                                ${formatDateTime(
+                                    booking.createdAt
+                                )}
+                            </small>
+                        </td>
+
+                        <td>
+                            ${escapeHTML(
+                                booking.name
+                            )}
+                        </td>
+
+                        <td dir="ltr">
+                            ${escapeHTML(
+                                booking.phone
+                            )}
+                        </td>
+
+                        <td>
+                            ${escapeHTML(
+                                booking.provider ||
+                                "—"
+                            )}
+                        </td>
+
+                        <td dir="ltr">
+                            ${escapeHTML(
+                                booking.date ||
+                                "—"
+                            )}
+
+                            <br>
+
+                            ${escapeHTML(
+                                booking.time ||
+                                "—"
+                            )}
+                        </td>
+
+                        <td>
+
+                            <span class="badge ${getStatusClass(
+                                status
+                            )}">
+
+                                ${getStatusLabel(
+                                    status
+                                )}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <div class="acts">
+
+                                ${
+                                    status !==
+                                    "confirmed"
+                                        ? `
+                                            <button
+                                                class="btn btn-soft mini"
+                                                data-action="confirm-booking"
+                                                data-id="${escapeHTML(
+                                                    booking.id
+                                                )}">
+                                                تأكيد
+                                            </button>
+                                        `
+                                        : ""
+                                }
+
+
+                                ${
+                                    status !==
+                                    "cancelled"
+                                        ? `
+                                            <button
+                                                class="btn btn-outline mini"
+                                                data-action="cancel-booking"
+                                                data-id="${escapeHTML(
+                                                    booking.id
+                                                )}">
+                                                إلغاء
+                                            </button>
+                                        `
+                                        : ""
+                                }
+
+
+                                <button
+                                    class="btn btn-soft mini"
+                                    data-action="whatsapp"
+                                    data-id="${escapeHTML(
+                                        booking.id
+                                    )}">
+                                    WhatsApp
+                                </button>
+
+
+                                <button
+                                    class="btn btn-outline mini"
+                                    data-action="delete-booking"
+                                    data-id="${escapeHTML(
+                                        booking.id
+                                    )}">
+                                    حذف
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+                `;
+            }
+        ).join("");
+}
+
+
+function updateBookingStats() {
+
+    const total =
+        $("bookingCount");
+
+    const pending =
+        $("pendingCount");
+
+
+    if (total) {
+        total.textContent =
+            bookingsCache.length;
+    }
+
+
+    if (pending) {
+
+        pending.textContent =
+            bookingsCache.filter(
+                booking =>
+                    (
+                        booking.status ||
+                        "pending"
+                    ) === "pending"
+            ).length;
+    }
+}
+
+
+/* =========================================================
+   BOOKING ACTIONS
+========================================================= */
+
+async function changeBookingStatus(
+    bookingId,
+    status
+) {
+
+    requireAdmin();
+
+
+    const bookingRef =
+        doc(
+            db,
+            "bookings",
+            bookingId
+        );
+
+
+    const bookingSnapshot =
+        await getDoc(
+            bookingRef
+        );
+
+
+    if (!bookingSnapshot.exists()) {
+        throw new Error(
+            "الحجز غير موجود."
+        );
+    }
+
+
+    const booking =
+        bookingSnapshot.data();
+
+
+    await updateDoc(
+        bookingRef,
+        {
+            status,
+            updatedAt:
+                serverTimestamp()
+        }
+    );
+
+
+    /*
+     * When cancelling a booking,
+     * reopen the slot.
+     */
+
+    if (
+        status === "cancelled" &&
+        booking.slotId
+    ) {
+
+        const slotRef =
+            doc(
+                db,
+                "slots",
+                booking.slotId
+            );
+
+
+        const slotSnapshot =
+            await getDoc(slotRef);
+
+
+        if (
+            slotSnapshot.exists()
+        ) {
+
+            await updateDoc(
+                slotRef,
+                {
+                    booked: false,
+                    bookingId: null,
+                    updatedAt:
+                        serverTimestamp()
+                }
+            );
+        }
+    }
+}
+
+
+async function removeBooking(
+    bookingId
+) {
+
+    requireAdmin();
+
+
+    const bookingRef =
+        doc(
+            db,
+            "bookings",
+            bookingId
+        );
+
+
+    const bookingSnapshot =
+        await getDoc(
+            bookingRef
+        );
+
+
+    if (!bookingSnapshot.exists()) {
+        return;
+    }
+
+
+    const booking =
+        bookingSnapshot.data();
+
+
+    const batch =
+        writeBatch(db);
+
+
+    batch.delete(
+        bookingRef
+    );
+
+
+    if (booking.slotId) {
+
+        const slotRef =
+            doc(
+                db,
+                "slots",
+                booking.slotId
+            );
+
+
+        const slotSnapshot =
+            await getDoc(slotRef);
+
+
+        if (
+            slotSnapshot.exists()
+        ) {
+
+            batch.update(
+                slotRef,
+                {
+                    booked: false,
+                    bookingId: null,
+                    updatedAt:
+                        serverTimestamp()
+                }
+            );
+        }
+    }
+
+
+    await batch.commit();
+}
+
+
+/* =========================================================
+   BOOKING BUTTONS
+========================================================= */
+
+document.addEventListener(
+    "click",
+    async event => {
+
+        const button =
+            event.target.closest(
+                "[data-action]"
+            );
+
+
+        if (!button) return;
+
+
+        const action =
+            button.dataset.action;
+
+        const id =
+            button.dataset.id;
+
+
+        try {
+
+            if (
+                action ===
+                "confirm-booking"
+            ) {
+
+                await changeBookingStatus(
+                    id,
+                    "confirmed"
+                );
+
+                return;
+            }
+
+
+            if (
+                action ===
+                "cancel-booking"
+            ) {
+
+                if (
+                    !confirm(
+                        "هل تريد إلغاء هذا الحجز؟"
+                    )
+                ) return;
+
+
+                await changeBookingStatus(
+                    id,
+                    "cancelled"
+                );
+
+                return;
+            }
+
+
+            if (
+                action ===
+                "delete-booking"
+            ) {
+
+                if (
+                    !confirm(
+                        "هل تريد حذف الحجز نهائيًا؟"
+                    )
+                ) return;
+
+
+                await removeBooking(
+                    id
+                );
+
+                return;
+            }
+
+
+            if (
+                action ===
+                "whatsapp"
+            ) {
+
+                const booking =
+                    bookingsCache.find(
+                        item =>
+                            item.id === id
+                    );
+
+
+                if (!booking) return;
+
+
+                openWhatsApp(
+                    booking
+                );
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Booking action:",
+                error
+            );
+
+            alert(
+                "حدث خطأ أثناء تنفيذ العملية."
+            );
+        }
+    }
+);
+
+
+/* =========================================================
+   WHATSAPP
+========================================================= */
+
+function openWhatsApp(
+    booking
+) {
+
+    let phone =
+        String(
+            booking.phone || ""
+        )
+        .replace(
+            /[^\d+]/g,
+            ""
+        );
+
+
+    if (
+        phone.startsWith("+")
+    ) {
+
+        phone =
+            phone.substring(1);
+    }
+
+
+    if (
+        phone.startsWith("00")
+    ) {
+
+        phone =
+            phone.substring(2);
+    }
+
+
+    if (
+        phone.startsWith("01") &&
+        phone.length === 11
+    ) {
+
+        phone =
+            "20" +
+            phone.substring(1);
+    }
+
+
+    if (!phone) {
+
+        alert(
+            "رقم العميل غير صالح."
+        );
+
+        return;
+    }
+
 
     const message =
 `مرحبًا،
@@ -158,10 +929,14 @@ function openWhatsApp(phone, booking) {
 التاريخ: ${booking.date || "—"}
 الوقت: ${booking.time || "—"}
 
-نحن نتواصل معك بخصوص موعدك.`;
+نتواصل معك بخصوص موعدك.`;
+
 
     const url =
-        `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+        `https://wa.me/${phone}?text=${encodeURIComponent(
+            message
+        )}`;
+
 
     window.open(
         url,
@@ -172,501 +947,53 @@ function openWhatsApp(phone, booking) {
 
 
 /* =========================================================
-   REALTIME BOOKINGS
+   SLOTS
 ========================================================= */
 
-function listenToBookings() {
+function listenSlots() {
 
-    if (bookingsUnsubscribe) {
-        bookingsUnsubscribe();
-    }
-
-    const bookingsQuery = query(
-        collection(db, "bookings"),
-        orderBy("createdAt", "desc")
-    );
-
-    bookingsUnsubscribe = onSnapshot(
-        bookingsQuery,
-        snapshot => {
-
-            const bookings = snapshot.docs.map(item => ({
-                id: item.id,
-                ...item.data()
-            }));
-
-            renderBookings(bookings);
-            updateStatsFromBookings(bookings);
-
-            if (!firstBookingSnapshot) {
-
-                snapshot.docChanges().forEach(change => {
-
-                    if (change.type === "added") {
-
-                        const booking = {
-                            id: change.doc.id,
-                            ...change.doc.data()
-                        };
-
-                        showBookingNotification(booking);
-                    }
-                });
-            }
-
-            firstBookingSnapshot = false;
-        },
-
-        error => {
-            console.error("Bookings listener:", error);
-        }
-    );
-}
-
-
-function renderBookings(bookings) {
-
-    const container =
-        document.getElementById("bookRows");
-
-    if (!container) return;
-
-    if (!bookings.length) {
-
-        container.innerHTML = `
-            <tr>
-                <td colspan="7" class="empty">
-                    لا توجد حجوزات حاليًا.
-                </td>
-            </tr>
-        `;
-
-        return;
-    }
-
-    container.innerHTML = bookings.map(booking => {
-
-        const status = booking.status || "pending";
-
-        return `
-            <tr>
-
-                <td>
-                    <strong>${escapeHTML(booking.id)}</strong>
-                    <br>
-                    <small>
-                        ${escapeHTML(
-                            formatTimestamp(booking.createdAt)
-                        )}
-                    </small>
-                </td>
-
-                <td>
-                    ${escapeHTML(booking.name)}
-                </td>
-
-                <td dir="ltr">
-                    ${escapeHTML(booking.phone)}
-                </td>
-
-                <td>
-                    ${escapeHTML(booking.provider)}
-                </td>
-
-                <td dir="ltr">
-                    ${escapeHTML(booking.date || "—")}
-                    <br>
-                    ${escapeHTML(booking.time || "—")}
-                </td>
-
-                <td>
-                    <span class="badge ${statusClass(status)}">
-                        ${statusLabel(status)}
-                    </span>
-                </td>
-
-                <td>
-
-                    <div class="acts">
-
-                        ${
-                            status !== "confirmed"
-                            ? `
-                                <button
-                                    class="btn btn-soft mini"
-                                    data-booking-action="confirm"
-                                    data-id="${escapeHTML(booking.id)}">
-                                    تأكيد
-                                </button>
-                            `
-                            : ""
-                        }
-
-                        ${
-                            status !== "cancelled"
-                            ? `
-                                <button
-                                    class="btn btn-outline mini"
-                                    data-booking-action="cancel"
-                                    data-id="${escapeHTML(booking.id)}">
-                                    إلغاء
-                                </button>
-                            `
-                            : ""
-                        }
-
-                        <button
-                            class="btn btn-soft mini"
-                            data-booking-action="whatsapp"
-                            data-id="${escapeHTML(booking.id)}">
-                            WhatsApp
-                        </button>
-
-                        <button
-                            class="btn btn-outline mini"
-                            data-booking-action="delete"
-                            data-id="${escapeHTML(booking.id)}">
-                            حذف
-                        </button>
-
-                    </div>
-
-                </td>
-
-            </tr>
-        `;
-    }).join("");
-}
-
-
-function updateStatsFromBookings(bookings) {
-
-    const bookingCount =
-        document.getElementById("bookingCount");
-
-    const pendingCount =
-        document.getElementById("pendingCount");
-
-    if (bookingCount) {
-        bookingCount.textContent = bookings.length;
-    }
-
-    if (pendingCount) {
-        pendingCount.textContent =
-            bookings.filter(
-                item => (item.status || "pending") === "pending"
-            ).length;
-    }
-}
-
-
-/* =========================================================
-   BOOKING ACTIONS
-========================================================= */
-
-async function updateBookingStatus(id, status) {
-
-    getCurrentUser();
-
-    const bookingRef =
-        doc(db, "bookings", id);
-
-    const bookingSnap =
-        await getDoc(bookingRef);
-
-    if (!bookingSnap.exists()) {
-        throw new Error("الحجز غير موجود.");
-    }
-
-    const booking =
-        bookingSnap.data();
-
-    await updateDoc(
-        bookingRef,
-        {
-            status,
-            updatedAt: serverTimestamp()
-        }
-    );
-
-    /*
-     * When admin cancels a booking,
-     * reopen the related slot.
-     */
-
-    if (
-        status === "cancelled" &&
-        booking.slotId
-    ) {
-
-        const slotRef =
-            doc(db, "slots", booking.slotId);
-
-        const slotSnap =
-            await getDoc(slotRef);
-
-        if (slotSnap.exists()) {
-
-            await updateDoc(
-                slotRef,
-                {
-                    booked: false,
-                    bookingId: null,
-                    updatedAt: serverTimestamp()
-                }
-            );
-        }
-    }
-}
-
-
-async function deleteBooking(id) {
-
-    getCurrentUser();
-
-    const bookingRef =
-        doc(db, "bookings", id);
-
-    const bookingSnap =
-        await getDoc(bookingRef);
-
-    if (!bookingSnap.exists()) return;
-
-    const booking =
-        bookingSnap.data();
-
-    const batch =
-        writeBatch(db);
-
-    batch.delete(bookingRef);
-
-    if (booking.slotId) {
-
-        const slotRef =
-            doc(db, "slots", booking.slotId);
-
-        const slotSnap =
-            await getDoc(slotRef);
-
-        if (slotSnap.exists()) {
-
-            batch.update(
-                slotRef,
-                {
-                    booked: false,
-                    bookingId: null,
-                    updatedAt: serverTimestamp()
-                }
-            );
-        }
-    }
-
-    await batch.commit();
-}
-
-
-document.addEventListener(
-    "click",
-    async event => {
-
-        const button =
-            event.target.closest(
-                "[data-booking-action]"
-            );
-
-        if (!button) return;
-
-        const action =
-            button.dataset.bookingAction;
-
-        const id =
-            button.dataset.id;
-
-        try {
-
-            if (action === "confirm") {
-
-                await updateBookingStatus(
-                    id,
-                    "confirmed"
-                );
-            }
-
-
-            if (action === "cancel") {
-
-                if (
-                    !confirm(
-                        "هل تريد إلغاء هذا الحجز؟"
-                    )
-                ) return;
-
-                await updateBookingStatus(
-                    id,
-                    "cancelled"
-                );
-            }
-
-
-            if (action === "delete") {
-
-                if (
-                    !confirm(
-                        "هل تريد حذف الحجز نهائيًا؟"
-                    )
-                ) return;
-
-                await deleteBooking(id);
-            }
-
-
-            if (action === "whatsapp") {
-
-                const bookingSnap =
-                    await getDoc(
-                        doc(db, "bookings", id)
-                    );
-
-                if (!bookingSnap.exists()) {
-                    alert("الحجز غير موجود.");
-                    return;
-                }
-
-                openWhatsApp(
-                    bookingSnap.data().phone,
-                    {
-                        id,
-                        ...bookingSnap.data()
-                    }
-                );
-            }
-
-        } catch (error) {
-
-            console.error(
-                "Booking action error:",
-                error
-            );
-
-            alert(
-                "حدث خطأ أثناء تنفيذ العملية."
-            );
-        }
-    }
-);
-
-
-/* =========================================================
-   BROWSER NOTIFICATION
-========================================================= */
-
-function showBookingNotification(booking) {
-
-    const title =
-        "🔔 حجز جديد في MindCare";
-
-    const body =
-        `${booking.name || "عميل"} - ` +
-        `${booking.provider || "مختص"} - ` +
-        `${booking.date || ""} ` +
-        `${booking.time || ""}`;
-
-    const notification =
-        document.getElementById("notification");
-
-    const notificationTitle =
-        document.getElementById("notificationTitle");
-
-    const notificationBody =
-        document.getElementById("notificationBody");
-
-    if (
-        notification &&
-        notificationTitle &&
-        notificationBody
-    ) {
-
-        notificationTitle.textContent = title;
-        notificationBody.textContent = body;
-
-        notification.hidden = false;
-
-        setTimeout(() => {
-            notification.hidden = true;
-        }, 8000);
+    if (unsubscribeSlots) {
+        unsubscribeSlots();
     }
 
 
-    if (
-        "Notification" in window &&
-        Notification.permission === "granted"
-    ) {
-
-        try {
-
-            new Notification(
-                title,
-                {
-                    body,
-                    tag: `mindcare-${booking.id}`
-                }
-            );
-
-        } catch (error) {
-
-            console.warn(
-                "Browser notification failed:",
-                error
-            );
-        }
-    }
-}
-
-
-/* =========================================================
-   REALTIME SLOTS
-========================================================= */
-
-function listenToSlots() {
-
-    if (slotsUnsubscribe) {
-        slotsUnsubscribe();
-    }
-
-    const slotsQuery =
-        query(
-            collection(db, "slots"),
-            orderBy("date", "asc")
-        );
-
-    slotsUnsubscribe =
+    unsubscribeSlots =
         onSnapshot(
-            slotsQuery,
+            collection(db, "slots"),
             snapshot => {
 
-                const slots =
-                    snapshot.docs.map(item => ({
-                        id: item.id,
-                        ...item.data()
-                    }));
-
-                renderSlots(slots);
-
-                const available =
-                    slots.filter(
-                        slot => !slot.booked
+                slotsCache =
+                    snapshot.docs.map(
+                        item => ({
+                            id: item.id,
+                            ...item.data()
+                        })
                     );
 
-                const slotCount =
-                    document.getElementById("slotCount");
 
-                if (slotCount) {
-                    slotCount.textContent =
-                        available.length;
-                }
+                slotsCache.sort(
+                    (a, b) => {
+
+                        const first =
+                            `${a.date || ""} ${a.time || ""}`;
+
+                        const second =
+                            `${b.date || ""} ${b.time || ""}`;
+
+                        return first.localeCompare(
+                            second
+                        );
+                    }
+                );
+
+
+                renderSlots();
+
+                updateSlotStats();
             },
 
             error => {
+
                 console.error(
                     "Slots listener:",
                     error
@@ -676,19 +1003,22 @@ function listenToSlots() {
 }
 
 
-function renderSlots(slots) {
+function renderSlots() {
 
-    const container =
-        document.getElementById("slotRows");
+    const tbody =
+        $("slotRows");
 
-    if (!container) return;
+    if (!tbody) return;
 
-    if (!slots.length) {
 
-        container.innerHTML = `
+    if (!slotsCache.length) {
+
+        tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="empty">
-                    لا توجد مواعيد مضافة.
+                <td
+                    colspan="5"
+                    class="empty">
+                    لا توجد مواعيد.
                 </td>
             </tr>
         `;
@@ -696,79 +1026,92 @@ function renderSlots(slots) {
         return;
     }
 
-    slots.sort((a, b) => {
 
-        const first =
-            `${a.date || ""} ${a.time || ""}`;
+    tbody.innerHTML =
+        slotsCache.map(
+            slot => {
 
-        const second =
-            `${b.date || ""} ${b.time || ""}`;
+                const booked =
+                    Boolean(
+                        slot.booked
+                    );
 
-        return first.localeCompare(second);
-    });
+
+                return `
+                    <tr>
+
+                        <td>
+                            ${escapeHTML(
+                                slot.provider ||
+                                "—"
+                            )}
+                        </td>
+
+                        <td dir="ltr">
+                            ${escapeHTML(
+                                slot.date ||
+                                "—"
+                            )}
+                        </td>
+
+                        <td dir="ltr">
+                            ${escapeHTML(
+                                slot.time ||
+                                "—"
+                            )}
+                        </td>
+
+                        <td>
+
+                            <span class="badge">
+
+                                ${
+                                    booked
+                                        ? "محجوز"
+                                        : "متاح"
+                                }
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <button
+                                class="btn btn-outline mini"
+                                data-action="delete-slot"
+                                data-id="${escapeHTML(
+                                    slot.id
+                                )}">
+
+                                حذف
+
+                            </button>
+
+                        </td>
+
+                    </tr>
+                `;
+            }
+        ).join("");
+}
 
 
-    container.innerHTML =
-        slots.map(slot => {
+function updateSlotStats() {
 
-            const booked =
-                Boolean(slot.booked);
+    const counter =
+        $("slotCount");
 
-            return `
-                <tr>
+    if (!counter) return;
 
-                    <td>
-                        ${escapeHTML(
-                            slot.provider || "—"
-                        )}
-                    </td>
 
-                    <td dir="ltr">
-                        ${escapeHTML(
-                            slot.date || "—"
-                        )}
-                    </td>
-
-                    <td dir="ltr">
-                        ${escapeHTML(
-                            slot.time || "—"
-                        )}
-                    </td>
-
-                    <td>
-
-                        <span class="badge ${
-                            booked
-                                ? "booked"
-                                : "available"
-                        }">
-
-                            ${
-                                booked
-                                    ? "محجوز"
-                                    : "متاح"
-                            }
-
-                        </span>
-
-                    </td>
-
-                    <td>
-
-                        <button
-                            class="btn btn-outline mini"
-                            data-slot-delete="${escapeHTML(slot.id)}">
-
-                            حذف
-
-                        </button>
-
-                    </td>
-
-                </tr>
-            `;
-
-        }).join("");
+    counter.textContent =
+        slotsCache.filter(
+            slot =>
+                !slot.booked &&
+                slot.date >=
+                    getTodayString()
+        ).length;
 }
 
 
@@ -776,215 +1119,161 @@ function renderSlots(slots) {
    ADD SLOTS
 ========================================================= */
 
-async function addSlots(event) {
-
-    event.preventDefault();
-
-    getCurrentUser();
-
-    const providerSelect =
-        document.getElementById("sProv");
-
-    const dateInput =
-        document.getElementById("sDate");
-
-    const timesInput =
-        document.getElementById("sTimes");
-
-    const providerId =
-        providerSelect?.value;
-
-    const providerName =
-        providerSelect?.selectedOptions?.[0]?.dataset.name ||
-        providerSelect?.selectedOptions?.[0]?.textContent ||
-        "";
-
-    const date =
-        dateInput.value;
-
-    const times =
-        timesInput.value
-            .split(",")
-            .map(time => time.trim())
-            .filter(Boolean);
-
-
-    if (!providerId) {
-
-        showMessage(
-            "slotMsg",
-            "اختر المختص.",
-            "error"
-        );
-
-        return;
-    }
-
-
-    if (!date) {
-
-        showMessage(
-            "slotMsg",
-            "اختر التاريخ.",
-            "error"
-        );
-
-        return;
-    }
-
-
-    if (!times.length) {
-
-        showMessage(
-            "slotMsg",
-            "أدخل وقتًا واحدًا على الأقل.",
-            "error"
-        );
-
-        return;
-    }
-
-
-    try {
-
-        const existingQuery =
-            query(
-                collection(db, "slots"),
-                where(
-                    "providerId",
-                    "==",
-                    providerId
-                ),
-                where(
-                    "date",
-                    "==",
-                    date
-                )
-            );
-
-        const existingSnap =
-            await getDocs(existingQuery);
-
-        const existingTimes =
-            new Set(
-                existingSnap.docs.map(
-                    item => item.data().time
-                )
-            );
-
-
-        let added = 0;
-
-        for (const time of times) {
-
-            if (existingTimes.has(time)) {
-                continue;
-            }
-
-            await addDoc(
-                collection(db, "slots"),
-                {
-                    providerId,
-                    provider: providerName,
-                    date,
-                    time,
-                    booked: false,
-                    bookingId: null,
-                    createdAt: serverTimestamp()
-                }
-            );
-
-            added++;
-        }
-
-
-        showMessage(
-            "slotMsg",
-            `تمت إضافة ${added} موعد/مواعيد بنجاح.`,
-            "success"
-        );
-
-        event.target.reset();
-
-    } catch (error) {
-
-        console.error(
-            "Add slot error:",
-            error
-        );
-
-        showMessage(
-            "slotMsg",
-            "حدث خطأ أثناء إضافة المواعيد.",
-            "error"
-        );
-    }
-}
-
-
-document
-    .getElementById("slotForm")
-    ?.addEventListener(
-        "submit",
-        addSlots
-    );
-
-
-document.addEventListener(
-    "click",
+$("slotForm")?.addEventListener(
+    "submit",
     async event => {
 
-        const button =
-            event.target.closest(
-                "[data-slot-delete]"
-            );
+        event.preventDefault();
 
-        if (!button) return;
-
-        const slotId =
-            button.dataset.slotDelete;
-
-        if (
-            !confirm(
-                "هل تريد حذف هذا الموعد؟"
-            )
-        ) return;
 
         try {
 
-            getCurrentUser();
+            requireAdmin();
 
-            const slotRef =
-                doc(db, "slots", slotId);
 
-            const slotSnap =
-                await getDoc(slotRef);
+            const providerSelect =
+                $("sProv");
 
-            if (!slotSnap.exists()) return;
+            const date =
+                $("sDate")?.value;
 
-            const slot =
-                slotSnap.data();
+            const timesValue =
+                $("sTimes")?.value;
 
-            if (slot.booked) {
 
-                alert(
-                    "لا يمكن حذف موعد محجوز. قم بإلغاء الحجز أولًا."
+            const providerId =
+                providerSelect?.value;
+
+
+            const providerOption =
+                providerSelect
+                    ?.selectedOptions?.[0];
+
+
+            const providerName =
+                providerOption
+                    ?.dataset?.name ||
+                providerOption
+                    ?.textContent
+                    ?.trim() ||
+                "";
+
+
+            if (!providerId) {
+
+                showMessage(
+                    "slotMsg",
+                    "اختر المختص.",
+                    "error"
                 );
 
                 return;
             }
 
-            await deleteDoc(slotRef);
+
+            if (!date) {
+
+                showMessage(
+                    "slotMsg",
+                    "اختر التاريخ.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            const times =
+                String(
+                    timesValue || ""
+                )
+                .split(",")
+                .map(
+                    item =>
+                        item.trim()
+                )
+                .filter(Boolean);
+
+
+            if (!times.length) {
+
+                showMessage(
+                    "slotMsg",
+                    "أدخل موعدًا واحدًا على الأقل.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            let added = 0;
+
+
+            for (
+                const time of times
+            ) {
+
+                const duplicate =
+                    slotsCache.some(
+                        slot =>
+                            slot.providerId ===
+                                providerId &&
+                            slot.date ===
+                                date &&
+                            slot.time ===
+                                time
+                    );
+
+
+                if (duplicate) {
+                    continue;
+                }
+
+
+                await addDoc(
+                    collection(
+                        db,
+                        "slots"
+                    ),
+                    {
+                        providerId,
+                        provider:
+                            providerName,
+                        date,
+                        time,
+                        booked: false,
+                        bookingId: null,
+                        createdAt:
+                            serverTimestamp()
+                    }
+                );
+
+
+                added++;
+            }
+
+
+            showMessage(
+                "slotMsg",
+                `تمت إضافة ${added} موعد بنجاح.`,
+                "success"
+            );
+
+
+            event.target.reset();
 
         } catch (error) {
 
             console.error(
-                "Delete slot:",
+                "Add slot error:",
                 error
             );
 
-            alert(
-                "حدث خطأ أثناء حذف الموعد."
+            showMessage(
+                "slotMsg",
+                "حدث خطأ أثناء إضافة الموعد.",
+                "error"
             );
         }
     }
@@ -992,40 +1281,88 @@ document.addEventListener(
 
 
 /* =========================================================
+   DELETE SLOT
+========================================================= */
+
+async function deleteSlot(
+    slotId
+) {
+
+    requireAdmin();
+
+
+    const slot =
+        slotsCache.find(
+            item =>
+                item.id === slotId
+        );
+
+
+    if (!slot) return;
+
+
+    if (slot.booked) {
+
+        alert(
+            "لا يمكن حذف موعد محجوز. قم بإلغاء الحجز أولًا."
+        );
+
+        return;
+    }
+
+
+    await deleteDoc(
+        doc(
+            db,
+            "slots",
+            slotId
+        )
+    );
+}
+
+
+/* =========================================================
    TOPICS / SECTIONS
 ========================================================= */
 
-function listenToTopics() {
+function listenTopics() {
 
-    if (topicsUnsubscribe) {
-        topicsUnsubscribe();
+    if (unsubscribeTopics) {
+        unsubscribeTopics();
     }
 
-    const topicsQuery =
-        query(
-            collection(db, "topics"),
-            orderBy("createdAt", "desc")
-        );
 
-    topicsUnsubscribe =
+    unsubscribeTopics =
         onSnapshot(
-            topicsQuery,
+            collection(
+                db,
+                "topics"
+            ),
             snapshot => {
 
-                const topics =
-                    snapshot.docs.map(item => ({
-                        id: item.id,
-                        ...item.data()
-                    }));
+                topicsCache =
+                    snapshot.docs.map(
+                        item => ({
+                            id: item.id,
+                            ...item.data()
+                        })
+                    );
 
-                renderTopics(topics);
 
-                const topicCount =
-                    document.getElementById("topicCount");
+                topicsCache.sort(
+                    sortByCreatedAt
+                );
 
-                if (topicCount) {
-                    topicCount.textContent =
-                        topics.length;
+
+                renderTopics();
+
+
+                const count =
+                    $("topicCount");
+
+                if (count) {
+                    count.textContent =
+                        topicsCache.length;
                 }
             },
 
@@ -1035,57 +1372,20 @@ function listenToTopics() {
                     "Topics listener:",
                     error
                 );
-
-                /*
-                 * If old topics don't have createdAt,
-                 * retry without orderBy.
-                 */
-
-                listenToTopicsFallback();
             }
         );
 }
 
 
-function listenToTopicsFallback() {
-
-    if (topicsUnsubscribe) {
-        topicsUnsubscribe();
-    }
-
-    topicsUnsubscribe =
-        onSnapshot(
-            collection(db, "topics"),
-            snapshot => {
-
-                const topics =
-                    snapshot.docs.map(item => ({
-                        id: item.id,
-                        ...item.data()
-                    }));
-
-                renderTopics(topics);
-
-                const topicCount =
-                    document.getElementById("topicCount");
-
-                if (topicCount) {
-                    topicCount.textContent =
-                        topics.length;
-                }
-            }
-        );
-}
-
-
-function renderTopics(topics) {
+function renderTopics() {
 
     const container =
-        document.getElementById("topicsList");
+        $("topicsList");
 
     if (!container) return;
 
-    if (!topics.length) {
+
+    if (!topicsCache.length) {
 
         container.innerHTML = `
             <p class="empty">
@@ -1098,344 +1398,281 @@ function renderTopics(topics) {
 
 
     container.innerHTML =
-        topics.map(topic => {
+        topicsCache.map(
+            topic => {
 
-            const active =
-                topic.active !== false;
+                const active =
+                    topic.active !== false;
 
-            return `
-                <div class="card"
-                    style="
-                        padding:15px;
-                        margin-bottom:10px;
-                    ">
 
-                    <div class="top"
-                        style="margin-bottom:10px">
+                return `
+                    <div
+                        class="card"
+                        style="
+                            padding:16px;
+                            margin-bottom:12px;
+                        ">
 
-                        <div>
+                        <div class="top">
 
-                            <strong>
-                                ${escapeHTML(
-                                    topic.titleAr ||
-                                    topic.title ||
-                                    "بدون اسم"
-                                )}
-                            </strong>
+                            <div>
 
-                            <br>
+                                <strong>
+                                    ${escapeHTML(
+                                        topic.titleAr ||
+                                        "بدون اسم"
+                                    )}
+                                </strong>
 
-                            <small>
-                                ${escapeHTML(
-                                    topic.titleEn ||
-                                    ""
-                                )}
-                            </small>
+                                <br>
+
+                                <small dir="ltr">
+                                    ${escapeHTML(
+                                        topic.titleEn ||
+                                        ""
+                                    )}
+                                </small>
+
+                            </div>
+
+
+                            <span
+                                class="badge">
+
+                                ${
+                                    active
+                                        ? "فعال"
+                                        : "مخفي"
+                                }
+
+                            </span>
 
                         </div>
 
-                        <span class="badge ${
-                            active
-                                ? "confirmed"
-                                : "cancelled"
-                        }">
 
-                            ${
-                                active
-                                    ? "فعال"
-                                    : "مخفي"
-                            }
+                        <p class="note">
 
-                        </span>
+                            ${escapeHTML(
+                                topic.descriptionAr ||
+                                topic.intro ||
+                                ""
+                            )}
 
-                    </div>
+                        </p>
 
 
-                    <p class="note">
+                        <div class="acts">
 
-                        ${escapeHTML(
-                            topic.descriptionAr ||
-                            topic.intro ||
-                            ""
-                        )}
+                            <button
+                                class="btn btn-soft mini"
+                                data-action="toggle-topic"
+                                data-id="${escapeHTML(
+                                    topic.id
+                                )}"
+                                data-active="${active}">
 
-                    </p>
+                                ${
+                                    active
+                                        ? "إخفاء"
+                                        : "تفعيل"
+                                }
+
+                            </button>
 
 
-                    <div class="acts">
+                            <button
+                                class="btn btn-outline mini"
+                                data-action="delete-topic"
+                                data-id="${escapeHTML(
+                                    topic.id
+                                )}">
 
-                        <button
-                            class="btn btn-soft mini"
-                            data-topic-toggle="${escapeHTML(topic.id)}"
-                            data-active="${active}">
+                                حذف
 
-                            ${
-                                active
-                                    ? "إخفاء"
-                                    : "تفعيل"
-                            }
+                            </button>
 
-                        </button>
-
-                        <button
-                            class="btn btn-outline mini"
-                            data-topic-delete="${escapeHTML(topic.id)}">
-
-                            حذف
-
-                        </button>
+                        </div>
 
                     </div>
-
-                </div>
-            `;
-
-        }).join("");
+                `;
+            }
+        ).join("");
 }
 
 
-/*
- * Add / Update topic
- *
- * Supports the current HTML IDs:
- * tKey
- * tTitle
- * tIntro
- * tSymptoms
- *
- * Also supports future bilingual fields:
- * tTitleEn
- * tIntroEn
- */
+/* =========================================================
+   ADD TOPIC
+========================================================= */
 
-document
-    .getElementById("topicForm")
-    ?.addEventListener(
-        "submit",
-        async event => {
-
-            event.preventDefault();
-
-            try {
-
-                getCurrentUser();
-
-                const key =
-                    document
-                        .getElementById("tKey")
-                        .value
-                        .trim()
-                        .toLowerCase()
-                        .replace(/\s+/g, "-");
-
-
-                const titleAr =
-                    document
-                        .getElementById("tTitle")
-                        .value
-                        .trim();
-
-
-                const introAr =
-                    document
-                        .getElementById("tIntro")
-                        .value
-                        .trim();
-
-
-                const symptoms =
-                    document
-                        .getElementById("tSymptoms")
-                        .value
-                        .split(",")
-                        .map(item => item.trim())
-                        .filter(Boolean);
-
-
-                if (!key || !titleAr) {
-
-                    showMessage(
-                        "topicMsg",
-                        "أدخل البيانات المطلوبة.",
-                        "error"
-                    );
-
-                    return;
-                }
-
-
-                const titleEnInput =
-                    document.getElementById("tTitleEn");
-
-                const introEnInput =
-                    document.getElementById("tIntroEn");
-
-
-                const titleEn =
-                    titleEnInput?.value.trim() ||
-                    titleAr;
-
-
-                const introEn =
-                    introEnInput?.value.trim() ||
-                    introAr;
-
-
-                /*
-                 * Use the key as document ID.
-                 */
-
-                const topicRef =
-                    doc(db, "topics", key);
-
-                const existing =
-                    await getDoc(topicRef);
-
-
-                const data = {
-
-                    titleAr,
-                    titleEn,
-
-                    descriptionAr:
-                        introAr,
-
-                    descriptionEn:
-                        introEn,
-
-                    intro:
-                        introAr,
-
-                    symptoms,
-
-                    active:
-                        existing.exists()
-                            ? existing.data().active !== false
-                            : true,
-
-                    updatedAt:
-                        serverTimestamp()
-                };
-
-
-                if (existing.exists()) {
-
-                    await updateDoc(
-                        topicRef,
-                        data
-                    );
-
-                } else {
-
-                    await import(
-                        "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js"
-                    ).then(async module => {
-
-                        await module.setDoc(
-                            topicRef,
-                            {
-                                ...data,
-                                createdAt:
-                                    serverTimestamp()
-                            }
-                        );
-
-                    });
-                }
-
-
-                showMessage(
-                    "topicMsg",
-                    "تم حفظ القسم بنجاح.",
-                    "success"
-                );
-
-                event.target.reset();
-
-            } catch (error) {
-
-                console.error(
-                    "Topic save:",
-                    error
-                );
-
-                showMessage(
-                    "topicMsg",
-                    "حدث خطأ أثناء حفظ القسم.",
-                    "error"
-                );
-            }
-        }
-    );
-
-
-document.addEventListener(
-    "click",
+$("topicForm")?.addEventListener(
+    "submit",
     async event => {
 
-        const toggle =
-            event.target.closest(
-                "[data-topic-toggle]"
-            );
-
-        const remove =
-            event.target.closest(
-                "[data-topic-delete]"
-            );
+        event.preventDefault();
 
 
         try {
 
-            if (toggle) {
+            requireAdmin();
 
-                getCurrentUser();
 
-                const id =
-                    toggle.dataset.topicToggle;
+            const key =
+                $("tKey")
+                    ?.value
+                    .trim()
+                    .toLowerCase()
+                    .replace(
+                        /\s+/g,
+                        "-"
+                    );
 
-                const current =
-                    toggle.dataset.active === "true";
 
+            const titleAr =
+                $("tTitle")
+                    ?.value
+                    .trim();
+
+
+            const descriptionAr =
+                $("tIntro")
+                    ?.value
+                    .trim();
+
+
+            const symptomsValue =
+                $("tSymptoms")
+                    ?.value
+                    .trim();
+
+
+            const titleEn =
+                $("tTitleEn")
+                    ?.value
+                    .trim() ||
+                titleAr;
+
+
+            const descriptionEn =
+                $("tIntroEn")
+                    ?.value
+                    .trim() ||
+                descriptionAr;
+
+
+            if (
+                !key ||
+                !titleAr
+            ) {
+
+                showMessage(
+                    "topicMsg",
+                    "أدخل اسم ومعرّف القسم.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            const symptoms =
+                symptomsValue
+                    ? symptomsValue
+                        .split(",")
+                        .map(
+                            item =>
+                                item.trim()
+                        )
+                        .filter(Boolean)
+                    : [];
+
+
+            /*
+             * Use key as document ID.
+             */
+
+            const topicRef =
+                doc(
+                    db,
+                    "topics",
+                    key
+                );
+
+
+            const existing =
+                await getDoc(
+                    topicRef
+                );
+
+
+            const data = {
+
+                key,
+
+                titleAr,
+
+                titleEn,
+
+                descriptionAr,
+
+                descriptionEn,
+
+                intro:
+                    descriptionAr,
+
+                symptoms,
+
+                active:
+                    existing.exists()
+                        ? existing
+                            .data()
+                            .active !== false
+                        : true,
+
+                updatedAt:
+                    serverTimestamp()
+            };
+
+
+            if (existing.exists()) {
 
                 await updateDoc(
-                    doc(db, "topics", id),
+                    topicRef,
+                    data
+                );
+
+            } else {
+
+                await setDoc(
+                    topicRef,
                     {
-                        active: !current,
-                        updatedAt:
+                        ...data,
+                        createdAt:
                             serverTimestamp()
                     }
                 );
             }
 
 
-            if (remove) {
-
-                getCurrentUser();
-
-                const id =
-                    remove.dataset.topicDelete;
-
-                if (
-                    !confirm(
-                        "هل تريد حذف هذا القسم نهائيًا؟"
-                    )
-                ) return;
+            showMessage(
+                "topicMsg",
+                "تم حفظ القسم بنجاح.",
+                "success"
+            );
 
 
-                await deleteDoc(
-                    doc(db, "topics", id)
-                );
-            }
+            event.target.reset();
 
         } catch (error) {
 
             console.error(
-                "Topic action:",
+                "Topic error:",
                 error
             );
 
-            alert(
-                "حدث خطأ أثناء تنفيذ العملية."
+            showMessage(
+                "topicMsg",
+                "حدث خطأ أثناء حفظ القسم.",
+                "error"
             );
         }
     }
@@ -1446,32 +1683,38 @@ document.addEventListener(
    PROVIDERS / SPECIALISTS
 ========================================================= */
 
-function listenToProviders() {
+function listenProviders() {
 
-    if (providersUnsubscribe) {
-        providersUnsubscribe();
+    if (unsubscribeProviders) {
+        unsubscribeProviders();
     }
 
-    const providersQuery =
-        query(
-            collection(db, "providers"),
-            orderBy("createdAt", "desc")
-        );
 
-    providersUnsubscribe =
+    unsubscribeProviders =
         onSnapshot(
-            providersQuery,
+            collection(
+                db,
+                "providers"
+            ),
             snapshot => {
 
-                const providers =
-                    snapshot.docs.map(item => ({
-                        id: item.id,
-                        ...item.data()
-                    }));
+                providersCache =
+                    snapshot.docs.map(
+                        item => ({
+                            id: item.id,
+                            ...item.data()
+                        })
+                    );
 
-                renderProviders(providers);
-                fillProviderSelect(providers);
 
+                providersCache.sort(
+                    sortByCreatedAt
+                );
+
+
+                renderProviders();
+
+                fillProviderSelect();
             },
 
             error => {
@@ -1480,45 +1723,20 @@ function listenToProviders() {
                     "Providers listener:",
                     error
                 );
-
-                listenToProvidersFallback();
             }
         );
 }
 
 
-function listenToProvidersFallback() {
-
-    if (providersUnsubscribe) {
-        providersUnsubscribe();
-    }
-
-    providersUnsubscribe =
-        onSnapshot(
-            collection(db, "providers"),
-            snapshot => {
-
-                const providers =
-                    snapshot.docs.map(item => ({
-                        id: item.id,
-                        ...item.data()
-                    }));
-
-                renderProviders(providers);
-                fillProviderSelect(providers);
-            }
-        );
-}
-
-
-function renderProviders(providers) {
+function renderProviders() {
 
     const container =
-        document.getElementById("providersList");
+        $("providersList");
 
     if (!container) return;
 
-    if (!providers.length) {
+
+    if (!providersCache.length) {
 
         container.innerHTML = `
             <p class="empty">
@@ -1531,373 +1749,500 @@ function renderProviders(providers) {
 
 
     container.innerHTML =
-        providers.map(provider => {
+        providersCache.map(
+            provider => {
 
-            const active =
-                provider.active !== false;
+                const active =
+                    provider.active !== false;
 
-            return `
-                <div class="card"
-                    style="
-                        padding:15px;
-                        margin-bottom:10px;
-                    ">
 
-                    <div class="top"
-                        style="margin-bottom:10px">
+                return `
+                    <div
+                        class="card"
+                        style="
+                            padding:16px;
+                            margin-bottom:12px;
+                        ">
 
-                        <div>
+                        <div class="top">
 
-                            <strong>
-                                ${escapeHTML(
-                                    provider.nameAr ||
-                                    provider.name ||
-                                    "بدون اسم"
-                                )}
-                            </strong>
+                            <div>
 
-                            <br>
+                                <strong>
+                                    ${escapeHTML(
+                                        provider.nameAr ||
+                                        "بدون اسم"
+                                    )}
+                                </strong>
 
-                            <small>
-                                ${escapeHTML(
-                                    provider.nameEn ||
-                                    ""
-                                )}
-                            </small>
+                                <br>
 
-                            <br>
+                                <small dir="ltr">
+                                    ${escapeHTML(
+                                        provider.nameEn ||
+                                        ""
+                                    )}
+                                </small>
 
-                            <small>
-                                ${escapeHTML(
-                                    provider.specialtyAr ||
-                                    ""
-                                )}
-                            </small>
+                                <br>
+
+                                <small>
+                                    ${escapeHTML(
+                                        provider.specialtyAr ||
+                                        ""
+                                    )}
+                                </small>
+
+                            </div>
+
+
+                            <span class="badge">
+
+                                ${
+                                    active
+                                        ? "فعال"
+                                        : "مخفي"
+                                }
+
+                            </span>
 
                         </div>
 
-                        <span class="badge ${
-                            active
-                                ? "confirmed"
-                                : "cancelled"
-                        }">
 
-                            ${
-                                active
-                                    ? "فعال"
-                                    : "مخفي"
-                            }
+                        <p class="note">
 
-                        </span>
+                            ${escapeHTML(
+                                provider.bioAr ||
+                                ""
+                            )}
 
-                    </div>
+                        </p>
 
 
-                    <p class="note">
+                        <div class="acts">
 
-                        ${escapeHTML(
-                            provider.bioAr ||
-                            ""
-                        )}
+                            <button
+                                class="btn btn-soft mini"
+                                data-action="toggle-provider"
+                                data-id="${escapeHTML(
+                                    provider.id
+                                )}"
+                                data-active="${active}">
 
-                    </p>
+                                ${
+                                    active
+                                        ? "إخفاء"
+                                        : "تفعيل"
+                                }
+
+                            </button>
 
 
-                    <div class="acts">
+                            <button
+                                class="btn btn-outline mini"
+                                data-action="delete-provider"
+                                data-id="${escapeHTML(
+                                    provider.id
+                                )}">
 
-                        <button
-                            class="btn btn-soft mini"
-                            data-provider-toggle="${escapeHTML(provider.id)}"
-                            data-active="${active}">
+                                حذف
 
-                            ${
-                                active
-                                    ? "إخفاء"
-                                    : "تفعيل"
-                            }
+                            </button>
 
-                        </button>
-
-                        <button
-                            class="btn btn-outline mini"
-                            data-provider-delete="${escapeHTML(provider.id)}">
-
-                            حذف
-
-                        </button>
+                        </div>
 
                     </div>
-
-                </div>
-            `;
-
-        }).join("");
+                `;
+            }
+        ).join("");
 }
 
 
-function fillProviderSelect(providers) {
+function fillProviderSelect() {
 
     const select =
-        document.getElementById("sProv");
+        $("sProv");
 
     if (!select) return;
 
+
     const activeProviders =
-        providers.filter(
+        providersCache.filter(
             provider =>
                 provider.active !== false
         );
 
 
-    select.innerHTML =
-        activeProviders.map(provider => {
-
-            const name =
-                provider.nameAr ||
-                provider.name ||
-                provider.nameEn ||
-                "مختص";
-
-
-            return `
-                <option
-                    value="${escapeHTML(provider.id)}"
-                    data-name="${escapeHTML(name)}">
-
-                    ${escapeHTML(name)}
-
-                </option>
-            `;
-
-        }).join("");
-
-
     if (!activeProviders.length) {
 
-        select.innerHTML =
-            `<option value="">
+        select.innerHTML = `
+            <option value="">
                 لا يوجد مختصون فعالون
-            </option>`;
+            </option>
+        `;
+
+        return;
     }
+
+
+    select.innerHTML =
+        activeProviders.map(
+            provider => {
+
+                const name =
+                    provider.nameAr ||
+                    provider.nameEn ||
+                    "مختص";
+
+
+                return `
+                    <option
+                        value="${escapeHTML(
+                            provider.id
+                        )}"
+                        data-name="${escapeHTML(
+                            name
+                        )}">
+
+                        ${escapeHTML(
+                            name
+                        )}
+
+                    </option>
+                `;
+            }
+        ).join("");
 }
 
 
-/*
- * Add provider
- *
- * Supports:
- * providerName
- *
- * Future bilingual fields:
- * providerNameAr
- * providerNameEn
- * providerSpecialtyAr
- * providerSpecialtyEn
- * providerBioAr
- * providerBioEn
- */
+/* =========================================================
+   ADD PROVIDER
+========================================================= */
 
-document
-    .getElementById("providerForm")
-    ?.addEventListener(
-        "submit",
-        async event => {
+$("providerForm")?.addEventListener(
+    "submit",
+    async event => {
 
-            event.preventDefault();
-
-            try {
-
-                getCurrentUser();
-
-                const nameInput =
-                    document.getElementById(
-                        "providerName"
-                    );
+        event.preventDefault();
 
 
-                const nameAr =
-                    nameInput?.value.trim();
+        try {
+
+            requireAdmin();
 
 
-                if (!nameAr) {
-
-                    showMessage(
-                        "providerMsg",
-                        "اكتب اسم المختص.",
-                        "error"
-                    );
-
-                    return;
-                }
+            const nameAr =
+                $("providerName")
+                    ?.value
+                    .trim();
 
 
-                const nameEnInput =
-                    document.getElementById(
-                        "providerNameEn"
-                    );
+            const nameEn =
+                $("providerNameEn")
+                    ?.value
+                    .trim() ||
+                nameAr;
 
 
-                const specialtyArInput =
-                    document.getElementById(
-                        "providerSpecialtyAr"
-                    );
+            const specialtyAr =
+                $("providerSpecialtyAr")
+                    ?.value
+                    .trim() ||
+                "";
 
 
-                const specialtyEnInput =
-                    document.getElementById(
-                        "providerSpecialtyEn"
-                    );
+            const specialtyEn =
+                $("providerSpecialtyEn")
+                    ?.value
+                    .trim() ||
+                specialtyAr;
 
 
-                const bioArInput =
-                    document.getElementById(
-                        "providerBioAr"
-                    );
+            const bioAr =
+                $("providerBioAr")
+                    ?.value
+                    .trim() ||
+                "";
 
 
-                const bioEnInput =
-                    document.getElementById(
-                        "providerBioEn"
-                    );
+            const bioEn =
+                $("providerBioEn")
+                    ?.value
+                    .trim() ||
+                bioAr;
 
 
-                const nameEn =
-                    nameEnInput?.value.trim() ||
-                    nameAr;
-
-
-                const specialtyAr =
-                    specialtyArInput?.value.trim() ||
-                    "";
-
-
-                const specialtyEn =
-                    specialtyEnInput?.value.trim() ||
-                    specialtyAr;
-
-
-                const bioAr =
-                    bioArInput?.value.trim() ||
-                    "";
-
-
-                const bioEn =
-                    bioEnInput?.value.trim() ||
-                    bioAr;
-
-
-                await addDoc(
-                    collection(db, "providers"),
-                    {
-
-                        nameAr,
-                        nameEn,
-
-                        specialtyAr,
-                        specialtyEn,
-
-                        bioAr,
-                        bioEn,
-
-                        active: true,
-
-                        createdAt:
-                            serverTimestamp(),
-
-                        updatedAt:
-                            serverTimestamp()
-                    }
-                );
-
+            if (!nameAr) {
 
                 showMessage(
                     "providerMsg",
-                    "تمت إضافة المختص بنجاح.",
-                    "success"
-                );
-
-
-                event.target.reset();
-
-            } catch (error) {
-
-                console.error(
-                    "Provider save:",
-                    error
-                );
-
-                showMessage(
-                    "providerMsg",
-                    "حدث خطأ أثناء إضافة المختص.",
+                    "اكتب اسم المختص.",
                     "error"
                 );
+
+                return;
             }
+
+
+            await addDoc(
+                collection(
+                    db,
+                    "providers"
+                ),
+                {
+
+                    nameAr,
+
+                    nameEn,
+
+                    specialtyAr,
+
+                    specialtyEn,
+
+                    bioAr,
+
+                    bioEn,
+
+                    active: true,
+
+                    createdAt:
+                        serverTimestamp(),
+
+                    updatedAt:
+                        serverTimestamp()
+                }
+            );
+
+
+            showMessage(
+                "providerMsg",
+                "تمت إضافة المختص بنجاح.",
+                "success"
+            );
+
+
+            event.target.reset();
+
+        } catch (error) {
+
+            console.error(
+                "Provider error:",
+                error
+            );
+
+            showMessage(
+                "providerMsg",
+                "حدث خطأ أثناء إضافة المختص.",
+                "error"
+            );
+        }
+    }
+);
+
+
+/* =========================================================
+   TOPIC / PROVIDER ACTIONS
+========================================================= */
+
+async function toggleTopic(
+    id,
+    current
+) {
+
+    requireAdmin();
+
+
+    await updateDoc(
+        doc(
+            db,
+            "topics",
+            id
+        ),
+        {
+            active: !current,
+            updatedAt:
+                serverTimestamp()
         }
     );
+}
 
+
+async function deleteTopic(
+    id
+) {
+
+    requireAdmin();
+
+
+    if (
+        !confirm(
+            "هل تريد حذف هذا القسم نهائيًا؟"
+        )
+    ) return;
+
+
+    await deleteDoc(
+        doc(
+            db,
+            "topics",
+            id
+        )
+    );
+}
+
+
+async function toggleProvider(
+    id,
+    current
+) {
+
+    requireAdmin();
+
+
+    await updateDoc(
+        doc(
+            db,
+            "providers",
+            id
+        ),
+        {
+            active: !current,
+            updatedAt:
+                serverTimestamp()
+        }
+    );
+}
+
+
+async function deleteProvider(
+    id
+) {
+
+    requireAdmin();
+
+
+    /*
+     * We recommend disabling a provider
+     * instead of deleting them if they
+     * already have historical bookings.
+     */
+
+    const hasRelatedBooking =
+        bookingsCache.some(
+            booking =>
+                booking.providerId === id
+        );
+
+
+    if (hasRelatedBooking) {
+
+        alert(
+            "هذا المختص مرتبط بحجوزات سابقة. استخدم إخفاء بدل الحذف."
+        );
+
+        return;
+    }
+
+
+    if (
+        !confirm(
+            "هل تريد حذف هذا المختص نهائيًا؟"
+        )
+    ) return;
+
+
+    await deleteDoc(
+        doc(
+            db,
+            "providers",
+            id
+        )
+    );
+}
+
+
+/* =========================================================
+   GLOBAL ACTION HANDLER
+========================================================= */
 
 document.addEventListener(
     "click",
     async event => {
 
-        const toggle =
+        const button =
             event.target.closest(
-                "[data-provider-toggle]"
+                "[data-action]"
             );
 
-        const remove =
-            event.target.closest(
-                "[data-provider-delete]"
-            );
+
+        if (!button) return;
+
+
+        const action =
+            button.dataset.action;
+
+        const id =
+            button.dataset.id;
 
 
         try {
 
-            if (toggle) {
+            switch (action) {
 
-                getCurrentUser();
+                case "delete-slot":
 
-                const id =
-                    toggle.dataset.providerToggle;
+                    if (
+                        confirm(
+                            "هل تريد حذف هذا الموعد؟"
+                        )
+                    ) {
 
-                const current =
-                    toggle.dataset.active === "true";
-
-
-                await updateDoc(
-                    doc(db, "providers", id),
-                    {
-                        active: !current,
-                        updatedAt:
-                            serverTimestamp()
+                        await deleteSlot(id);
                     }
-                );
-            }
+
+                    break;
 
 
-            if (remove) {
+                case "toggle-topic":
 
-                getCurrentUser();
+                    await toggleTopic(
+                        id,
+                        button.dataset.active ===
+                            "true"
+                    );
 
-                const id =
-                    remove.dataset.providerDelete;
-
-                if (
-                    !confirm(
-                        "هل تريد حذف هذا المختص نهائيًا؟"
-                    )
-                ) return;
+                    break;
 
 
-                await deleteDoc(
-                    doc(db, "providers", id)
-                );
+                case "delete-topic":
+
+                    await deleteTopic(id);
+
+                    break;
+
+
+                case "toggle-provider":
+
+                    await toggleProvider(
+                        id,
+                        button.dataset.active ===
+                            "true"
+                    );
+
+                    break;
+
+
+                case "delete-provider":
+
+                    await deleteProvider(id);
+
+                    break;
             }
 
         } catch (error) {
 
             console.error(
-                "Provider action:",
+                "Admin action error:",
                 error
             );
 
@@ -1910,29 +2255,115 @@ document.addEventListener(
 
 
 /* =========================================================
-   INITIALIZE AFTER ADMIN LOGIN
+   BROWSER NOTIFICATIONS
 ========================================================= */
 
-window.addEventListener(
-    "mindcare-admin-ready",
-    () => {
+const notificationButton =
+    $("enableNotifications");
 
-        console.log(
-            "MindCare Admin Firebase initialized."
-        );
 
-        listenToBookings();
-        listenToSlots();
-        listenToTopics();
-        listenToProviders();
+notificationButton?.addEventListener(
+    "click",
+    async () => {
 
-    },
-    { once: true }
+        if (
+            !("Notification" in window)
+        ) {
+
+            alert(
+                "المتصفح لا يدعم إشعارات النظام."
+            );
+
+            return;
+        }
+
+
+        const permission =
+            await Notification.requestPermission();
+
+
+        if (
+            permission ===
+            "granted"
+        ) {
+
+            alert(
+                "تم تفعيل إشعارات الحجوزات."
+            );
+
+        } else {
+
+            alert(
+                "لم يتم السماح بالإشعارات."
+            );
+        }
+    }
 );
 
 
+function notifyNewBooking(
+    booking
+) {
+
+    const title =
+        "🔔 حجز جديد في MindCare";
+
+
+    const body =
+        `${booking.name || "عميل"} - ` +
+        `${booking.provider || "مختص"} - ` +
+        `${booking.date || ""} ` +
+        `${booking.time || ""}`;
+
+
+    const counter =
+        $("notificationBadge");
+
+
+    if (counter) {
+
+        const current =
+            Number(
+                counter.textContent || 0
+            );
+
+        counter.textContent =
+            current + 1;
+
+        counter.hidden = false;
+    }
+
+
+    if (
+        "Notification" in window &&
+        Notification.permission ===
+            "granted"
+    ) {
+
+        try {
+
+            new Notification(
+                title,
+                {
+                    body,
+                    tag:
+                        `mindcare-${booking.id}`
+                }
+            );
+
+        } catch (error) {
+
+            console.warn(
+                "Notification error:",
+                error
+            );
+        }
+    }
+}
+
+
 /* =========================================================
-   TAB SYSTEM
+   TABS
 ========================================================= */
 
 document.addEventListener(
@@ -1944,13 +2375,15 @@ document.addEventListener(
                 "[data-tab]"
             );
 
+
         if (!button) return;
+
 
         const tab =
             button.dataset.tab;
 
 
-        const sections = [
+        const tabs = [
             "bookings",
             "slots",
             "topics",
@@ -1958,35 +2391,38 @@ document.addEventListener(
         ];
 
 
-        sections.forEach(name => {
+        tabs.forEach(
+            name => {
 
-            const section =
-                document.getElementById(
-                    `p-${name}`
-                );
+                const section =
+                    $(`p-${name}`);
 
-            if (!section) return;
 
-            section.hidden =
-                name !== tab;
-        });
+                if (section) {
+
+                    section.hidden =
+                        name !== tab;
+                }
+            }
+        );
 
 
         document
             .querySelectorAll(
                 "[data-tab]"
             )
-            .forEach(item => {
+            .forEach(
+                item => {
 
-                item.classList.remove(
-                    "btn-primary"
-                );
+                    item.classList.remove(
+                        "btn-primary"
+                    );
 
-                item.classList.add(
-                    "btn-soft"
-                );
-
-            });
+                    item.classList.add(
+                        "btn-soft"
+                    );
+                }
+            );
 
 
         button.classList.remove(
@@ -1997,4 +2433,148 @@ document.addEventListener(
             "btn-primary"
         );
     }
+);
+
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function formatDateTime(
+    timestamp
+) {
+
+    if (!timestamp) {
+        return "—";
+    }
+
+
+    try {
+
+        return timestamp
+            .toDate()
+            .toLocaleString(
+                "ar-EG",
+                {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+    } catch {
+
+        return "—";
+    }
+}
+
+
+function sortByCreatedAt(
+    a,
+    b
+) {
+
+    const first =
+        a.createdAt?.seconds ||
+        0;
+
+    const second =
+        b.createdAt?.seconds ||
+        0;
+
+    return second - first;
+}
+
+
+function getStatusLabel(
+    status
+) {
+
+    const labels = {
+
+        pending:
+            "قيد الانتظار",
+
+        confirmed:
+            "مؤكد",
+
+        cancelled:
+            "ملغي"
+    };
+
+
+    return (
+        labels[status] ||
+        status ||
+        "غير محدد"
+    );
+}
+
+
+function getStatusClass(
+    status
+) {
+
+    if (
+        status ===
+        "confirmed"
+    ) {
+
+        return "confirmed";
+    }
+
+
+    if (
+        status ===
+        "cancelled"
+    ) {
+
+        return "cancelled";
+    }
+
+
+    return "pending";
+}
+
+
+function getTodayString() {
+
+    const now =
+        new Date();
+
+
+    const year =
+        now.getFullYear();
+
+
+    const month =
+        String(
+            now.getMonth() + 1
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    const day =
+        String(
+            now.getDate()
+        ).padStart(
+            2,
+            "0"
+        );
+
+
+    return `${year}-${month}-${day}`;
+}
+
+
+/* =========================================================
+   INITIAL
+========================================================= */
+
+console.log(
+    "MindCare Admin Firebase loaded."
 );
