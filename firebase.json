@@ -1,0 +1,5 @@
+here{
+  "firestore": {
+    "rules": "firestore.rules"
+  }
+}
