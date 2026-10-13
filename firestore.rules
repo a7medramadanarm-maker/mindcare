@@ -1,0 +1,115 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.uid == "REPLACE_WITH_YOUR_ADMIN_UID";
+    }
+
+    function validPhone(phone) {
+      return phone is string
+        && phone.size() >= 10
+        && phone.size() <= 25;
+    }
+
+    match /providers/{providerId} {
+      allow read: if resource.data.active == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /topics/{topicId} {
+      allow read: if resource.data.active == true || isAdmin();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /slots/{slotId} {
+      allow read: if resource.data.booked == false || isAdmin();
+
+      allow create, delete: if isAdmin();
+
+      allow update: if isAdmin()
+        || (
+          !signedIn()
+          && resource.data.booked == false
+          && request.resource.data.booked == true
+          && request.resource.data.diff(resource.data)
+            .affectedKeys()
+            .hasOnly(["booked", "bookingId", "updatedAt"])
+          && request.resource.data.providerId == resource.data.providerId
+          && request.resource.data.date == resource.data.date
+          && request.resource.data.time == resource.data.time
+          && request.resource.data.bookingId is string
+          && getAfter(
+            /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
+          ).data.slotId == slotId
+          && getAfter(
+            /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
+          ).data.status == "pending"
+          && getAfter(
+            /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
+          ).data.providerId == resource.data.providerId
+          && getAfter(
+            /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
+          ).data.date == resource.data.date
+          && getAfter(
+            /databases/$(database)/documents/bookings/$(request.resource.data.bookingId)
+          ).data.time == resource.data.time
+        );
+    }
+
+    match /bookings/{bookingId} {
+      allow create: if !signedIn()
+        && request.resource.data.keys().hasOnly([
+          "name",
+          "phone",
+          "message",
+          "providerId",
+          "provider",
+          "slotId",
+          "date",
+          "time",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 100
+        && validPhone(request.resource.data.phone)
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 1000
+        && request.resource.data.status == "pending"
+        && request.resource.data.slotId is string
+        && request.resource.data.providerId is string
+        && request.resource.data.date is string
+        && request.resource.data.time is string
+        && request.resource.data.provider is string
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp
+        && get(
+          /databases/$(database)/documents/slots/$(request.resource.data.slotId)
+        ).data.booked == false
+        && get(
+          /databases/$(database)/documents/slots/$(request.resource.data.slotId)
+        ).data.providerId == request.resource.data.providerId
+        && get(
+          /databases/$(database)/documents/slots/$(request.resource.data.slotId)
+        ).data.date == request.resource.data.date
+        && get(
+          /databases/$(database)/documents/slots/$(request.resource.data.slotId)
+        ).data.time == request.resource.data.time
+        && getAfter(
+          /databases/$(database)/documents/slots/$(request.resource.data.slotId)
+        ).data.booked == true
+        && getAfter(
+          /databases/$(database)/documents/slots/$(request.resource.data.slotId)
+        ).data.bookingId == bookingId;
+
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
